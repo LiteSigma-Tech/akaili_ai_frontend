@@ -1,5 +1,6 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+// 1. Add nextTick to your imports
+import { ref, watch, onMounted, nextTick } from 'vue'; 
 import { X, CheckCircle2, ArrowRight } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -33,16 +34,28 @@ const handleVideoEnd = () => {
   isVideoEnded.value = true;
 };
 
-// Handle closing with Escape key
 onMounted(() => {
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && props.isOpen) emit('close');
   });
 });
 
-watch(() => props.isOpen, (newVal) => {
-  if (!newVal && videoRef.value) {
-    videoRef.value.pause();
+// 2. Update the watch logic
+watch(() => props.isOpen, async (newVal) => {
+  if (newVal) {
+    // When modal opens, wait for DOM to render the video element
+    await nextTick();
+    if (videoRef.value) {
+      videoRef.value.currentTime = 0; // Reset to start
+      videoRef.value.play().catch(error => {
+        console.error("Autoplay was prevented by browser. User interaction required.", error);
+      });
+    }
+  } else {
+    // When modal closes
+    if (videoRef.value) {
+      videoRef.value.pause();
+    }
     isVideoEnded.value = false;
   }
 });
@@ -88,10 +101,11 @@ watch(() => props.isOpen, (newVal) => {
               <!-- LEFT: Video Player -->
               <div class="lg:col-span-8 bg-black aspect-video relative flex items-center justify-center">
                 <video
-                  ref="videoRef"
+                 ref="videoRef"
                   class="w-full h-full object-contain"
                   playsinline
                   controls
+                  autoplay
                   @timeupdate="handleTimeUpdate"
                   @ended="handleVideoEnd"
                 >
