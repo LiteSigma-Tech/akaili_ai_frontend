@@ -79,7 +79,7 @@ watch(() => props.isOpen, (newVal) => {
             <button 
               @click="emit('close')"
               type="button"
-              class="absolute top-4 right-4 z-[110] p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-purple-600 transition-colors"
+              class="absolute top-4 right-4 z-[110] p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-[#9E4CFF] transition-colors"
             >
               <X class="w-6 h-6" />
             </button>
@@ -104,10 +104,10 @@ watch(() => props.isOpen, (newVal) => {
                   enter-from-class="opacity-0 translate-y-8"
                   enter-to-class="opacity-100 translate-y-0"
                 >
-                  <div v-if="isVideoEnded" class="absolute inset-0 bg-purple-600/90 flex flex-col items-center justify-center text-center p-8 z-20">
+                  <div v-if="isVideoEnded" class="absolute inset-0 bg-[#9E4CFF] flex flex-col items-center justify-center text-center p-8 z-20">
                     <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-sm w-full">
                       <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <CheckCircle2 class="text-purple-600 w-10 h-10" />
+                        <CheckCircle2 class="text-[#9E4CFF] w-10 h-10" />
                       </div>
                       <h3 class="text-2xl font-bold text-slate-900 mb-2">Ready to try?</h3>
                       <p class="text-slate-600 mb-6">Build your first smart assistant in less than 2 minutes.</p>
@@ -144,11 +144,11 @@ watch(() => props.isOpen, (newVal) => {
                       : 'bg-transparent border-transparent grayscale opacity-60 hover:opacity-100 hover:grayscale-0'
                     ]"
                   >
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-purple-600 font-bold text-sm">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-[#9E4CFF] font-bold text-sm">
                       {{ step.id }}
                     </div>
                     <div>
-                      <h5 class="font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition-colors">
+                      <h5 class="font-bold text-slate-900 dark:text-white group-hover:text-[#9E4CFF] transition-colors">
                         {{ step.title }}
                       </h5>
                       <p class="text-xs text-slate-500 dark:text-gray-400 mt-1">{{ step.description }}</p>
