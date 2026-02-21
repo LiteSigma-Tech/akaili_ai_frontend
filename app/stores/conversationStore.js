@@ -1,79 +1,99 @@
+// stores/conversationStore.js
 import { defineStore } from 'pinia'
-import { useAuthStore } from '~/stores/authStore'
 
 export const useConversationStore = defineStore('conversation', {
     state: () => ({
         conversations: [],
+        pagination: {
+            current_page: 1,
+            last_page: 1,
+            per_page: 20,
+            total: 0
+        },
         loading: false,
-        embedCode: '',
-        widgetToken: '',
-        testMode: 'default', // 'default', 'authenticated', 'anonymous'
-        testCustomerData: {
-            email: '',
-            name: '',
-            id: ''
-        }
+        error: null
     }),
 
     actions: {
         async fetchConversations(filters = {}) {
-            const config = useRuntimeConfig()
-            const { token } = useAuthStore()
-
             this.loading = true
+            this.error = null
+
             try {
-                const params = new URLSearchParams(filters)
-                const data = await $fetch(`${config.public.apiBase}/api/conversation?${params}`, {
-                    headers: { Authorization: `Bearer ${token}` }
+                const config = useRuntimeConfig()
+                const auth = useAuthStore()
+
+                // Build query params
+                const params = new URLSearchParams()
+                if (filters.source) params.append('source', filters.source)
+                if (filters.chatbot_id) params.append('chatbot_id', filters.chatbot_id)
+                if (filters.status) params.append('status', filters.status)
+                if (filters.has_handover) params.append('has_handover', 'true')
+                if (filters.page) params.append('page', filters.page)
+
+                const url = `${config.public.apiBase}/api/conversation${params.toString() ? '?' + params.toString() : ''}`
+
+                const response = await $fetch(url, {
+                    headers: {
+                        Authorization: `Bearer ${auth.token}`
+                    }
                 })
-                this.conversations = data.conversations.data || []
-                return data
+
+                if (response.success && response.data?.conversations) {
+                    // CRITICAL FIX: Laravel pagination wraps data in "data" property
+                    const paginatedData = response.data.conversations
+
+                    // Extract conversations array from pagination wrapper
+                    this.conversations = paginatedData.data || []
+
+                    // Store pagination metadata
+                    this.pagination = {
+                        current_page: paginatedData.current_page,
+                        last_page: paginatedData.last_page,
+                        per_page: paginatedData.per_page,
+                        total: paginatedData.total,
+                        from: paginatedData.from,
+                        to: paginatedData.to
+                    }
+
+                    console.log('✅ Loaded conversations:', this.conversations.length)
+                } else {
+                    console.error('❌ Unexpected API response structure:', response)
+                    this.conversations = []
+                }
             } catch (error) {
-                throw error.data || error
+                console.error('❌ Error fetching conversations:', error)
+                this.error = error.message || 'Failed to load conversations'
+                this.conversations = []
             } finally {
                 this.loading = false
             }
         },
 
-        async sendMessage(chatbotId, message, sessionId = null) {
-            const config = useRuntimeConfig()
-            const authStore = useAuthStore()
-
+        async fetchConversation(id) {
             try {
-                const payload = {
-                    chatbot_id: chatbotId,
-                    message: message,
-                    session_id: sessionId
-                }
+                const config = useRuntimeConfig()
+                const auth = useAuthStore()
 
-                // Add test mode if not default
-                if (this.testMode !== 'default') {
-                    payload.test_mode = this.testMode
-
-                    if (this.testMode === 'authenticated' && this.testCustomerData.email) {
-                        payload.test_customer_data = this.testCustomerData
+                const response = await $fetch(`${config.public.apiBase}/api/conversation/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${auth.token}`
                     }
-                }
-
-                const response = await $fetch(`${config.public.apiBase}/api/chat`, {
-                    method: 'POST',
-                    body: payload,
-                    headers: { Authorization: `Bearer ${authStore.token}` }
                 })
 
-                return response
-            } catch (error) {
-                throw error.data || error
-            }
-        }
-    },
+                if (response.success && response.data?.conversation) {
+                    return response.data.conversation
+                }
 
-    getters: {
-        testConversations: (state) => {
-            return state.conversations.filter(conv => conv.source === 'test')
+                return null
+            } catch (error) {
+                console.error('Error fetching conversation:', error)
+                throw error
+            }
         },
-        widgetConversations: (state) => {
-            return state.conversations.filter(conv => conv.source === 'widget')
+
+        clearError() {
+            this.error = null
         }
     }
 })
