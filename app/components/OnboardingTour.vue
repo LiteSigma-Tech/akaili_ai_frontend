@@ -1,47 +1,50 @@
 <template>
   <Teleport to="body">
-    <Transition name="tour-fade">
-      <!-- Logic: isActive = true, isSuppressed = false (no modal conflict) -->
-      <div v-if="isActive && !isSuppressed" class="fixed inset-0 z-[55] pointer-events-none">
+    <!-- Wrap in a transition to handle smooth entry/exit -->
+    <Transition name="fade">
+      <div v-if="isActive" class="fixed inset-0 z-[50] pointer-events-none">
         
-        <!-- Backdrop with hole -->
+        <!-- Backdrop with Hole (Behind z-60 modal) -->
         <div 
-          class="absolute inset-0 bg-slate-950/50 backdrop-blur-[1px] transition-all duration-700 pointer-events-auto"
+          class="absolute inset-0 bg-slate-950/50 backdrop-blur-[1px] transition-all duration-500"
           :style="overlayStyle"
         ></div>
 
         <!-- Tooltip Card -->
         <div 
           ref="tooltip"
-          class="absolute z-[56] w-[280px] sm:w-[320px] p-6 rounded-[20px] bg-white dark:bg-slate-900 shadow-[0_20px_60px_rgba(0,0,0,0.3)] border border-purple-100 dark:border-white/10 transition-all duration-500 ease-in-out pointer-events-auto"
+          class="absolute z-[51] w-[300px] p-6 rounded-[24px] bg-white dark:bg-slate-900 shadow-2xl border border-purple-100 dark:border-white/10 transition-all duration-300 ease-out pointer-events-auto"
           :style="tooltipPosition"
         >
-          <div class="flex flex-col gap-5">
-            <!-- Formal Progress Bar -->
-            <div class="flex gap-1.5 h-1">
+          <div class="flex flex-col gap-4">
+            <!-- Progress Bar -->
+            <div class="flex gap-1">
               <div v-for="(_, i) in steps" :key="i"
-                class="flex-1 rounded-full transition-all duration-500"
-                :style="{ backgroundColor: i <= currentStep ? '#9E4CFF' : '#e2e8f0' }"
+                class="h-1 rounded-full transition-all duration-300"
+                :style="{ 
+                  width: i === currentStep ? '40px' : '8px', 
+                  backgroundColor: i === currentStep ? '#9E4CFF' : '#e2e8f0' 
+                }"
               ></div>
             </div>
 
-            <div class="space-y-2">
-              <h3 class="text-xs font-bold text-[#9E4CFF] uppercase tracking-[0.2em]">
+            <div class="space-y-1">
+              <h3 class="text-sm font-bold text-[#9E4CFF] uppercase tracking-widest">
                 {{ steps[currentStep].title }}
               </h3>
-              <p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+              <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 {{ steps[currentStep].content }}
               </p>
             </div>
 
             <div class="flex items-center justify-between pt-2">
-              <button @click="skipTour" class="text-[10px] font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 uppercase tracking-widest transition-colors">
-                Skip Briefing
+              <button @click="skipTour" class="text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                Dismiss Guide
               </button>
               <button @click="nextStep" 
-                class="px-5 py-2.5 rounded-xl bg-[#9E4CFF] hover:bg-[#8A3DFF] text-white text-xs font-bold shadow-lg shadow-purple-500/20 active:scale-95 transition-all"
+                class="px-5 py-2.5 rounded-xl bg-[#9E4CFF] hover:bg-[#8A3DFF] text-white text-xs font-bold shadow-lg shadow-purple-500/20 active:scale-95 transition-all flex items-center gap-2"
               >
-                {{ isLastStep ? 'Complete' : 'Continue' }}
+                {{ isLastStep ? 'Finish' : 'Next Step' }}
               </button>
             </div>
           </div>
@@ -58,76 +61,61 @@ const props = defineProps(['isSidebarOpen'])
 const emit = defineEmits(['update:isSidebarOpen'])
 
 const isActive = ref(false)
-const isSuppressed = ref(false) 
 const currentStep = ref(0)
 const tooltipPosition = reactive({ top: '20px', left: '20px' })
 const overlayStyle = ref('')
 
-// formal terminology matching your sidebar links
+// Formal Step Definitions
 const steps = [
-  { target: '#step-dashboard', mobileTarget: '#step-dashboard-mob', title: 'Operational Overview', content: 'Central hub for monitoring real-time system performance and key engagement metrics.' },
-  { target: '#step-chatbot', mobileTarget: '#step-chatbot-mob', title: 'Agent Configuration', content: 'Define behavioral logic, visual identity, and core persona settings for your AI agents.' },
-  { target: '#step-kb', mobileTarget: '#step-kb-mob', title: 'Intelligence Memory', content: 'Securely upload documentation and link URLs to synchronize your AI Knowledge Base.' },
-  { target: '#step-db', mobileTarget: '#step-db-mob', title: 'Relational Integration', content: 'Management interface for connecting external structured databases to the AI engine.' },
-  { target: '#step-convos', mobileTarget: '#step-convos-mob', title: 'Interaction Audit', content: 'Review live interaction streams to ensure quality control and conversational accuracy.' },
-  { target: '#step-analytics', mobileTarget: '#step-analytics-mob', title: 'Data Insights', content: 'Access comprehensive reports regarding user intent trends and conversion statistics.' },
-  { target: '#step-test', mobileTarget: '#step-test-mob', title: 'Diagnostic Sandbox', content: 'Validate configuration updates and test Knowledge Base accuracy before deployment.' },
-  { target: '#step-team', mobileTarget: '#step-team-mob', title: 'Identity Management', content: 'Administrative control for organizational roles, team access, and security permissions.' },
-  { target: '#step-email', mobileTarget: '#step-email-mob', title: 'Outbound Automation', content: 'Configure automated communication sequences triggered by AI-detected leads.' },
-  { target: '#step-agent', mobileTarget: '#step-agent-mob', title: 'Assisted Transition', content: 'Logic parameters for seamless hand-off from AI agents to professional human staff.' },
-  { target: '#step-settings', mobileTarget: '#step-settings-mob', title: 'System Preferences', content: 'Configure global account settings, API keys, and subscription infrastructure.' }
+  { target: '#step-dashboard', title: 'Analytics Overview', content: 'Monitor real-time performance metrics and system engagement via the primary dashboard.' },
+  { target: '#step-chatbot', title: 'Agent Configuration', content: 'Define your AI’s persona, visual identity, and behavioral parameters.' },
+  { target: '#step-kb', title: 'Knowledge Repository', content: 'Upload documentation and link URLs to synchronize your AI’s data source.' },
+  { target: '#step-db', title: 'Database Integration', content: 'Connect structured data sources to enable complex query handling.' },
+  { target: '#step-convos', title: 'Live Monitoring', content: 'Review and manage active dialogue streams between users and your AI agents.' },
+  { target: '#step-analytics', title: 'Data Insights', content: 'Access deep-dive reports on user intent, conversion rates, and chat efficiency.' },
+  { target: '#step-test', title: 'Sandbox Environment', content: 'Validate your configuration changes in a secure testing interface before deployment.' },
+  { target: '#step-team', title: 'Access Control', content: 'Manage organizational roles and administrative permissions for team members.' },
+  { target: '#step-email', title: 'Automated Outreach', content: 'Configure email sequences triggered by AI interactions and lead captures.' },
+  { target: '#step-agent', title: 'Human Handoff', content: 'Seamlessly transition complex inquiries from AI to professional human agents.' },
+  { target: '#step-settings', title: 'System Preferences', content: 'Adjust global account configurations, billing, and API authentication keys.' }
 ]
 
 const isLastStep = computed(() => currentStep.value === steps.length - 1)
 
-// Conflict check for z-60 modals
-const checkConflicts = () => {
-  const modalBackdrop = document.querySelector('.bg-gray-900\\/40'); 
-  isSuppressed.value = !!modalBackdrop;
-}
-
 const updatePosition = async () => {
   await nextTick()
-  checkConflicts()
-
   const isMobile = window.innerWidth < 1024
   
-  // CRITICAL MOBILE FIX: Force sidebar open if it's closed during the tour
+  // Force sidebar open if needed
   if (isMobile && !props.isSidebarOpen) {
     emit('update:isSidebarOpen', true)
-    // Wait for the sidebar transition to finish before calculating positions
-    await new Promise(r => setTimeout(r, 450)) 
+    await new Promise(r => setTimeout(r, 400))
   }
 
   const step = steps[currentStep.value]
-  const targetId = isMobile ? step.mobileTarget : step.target
-  const el = document.querySelector(targetId)
+  const el = document.querySelector(step.target)
   
   if (el) {
     const rect = el.getBoundingClientRect()
-    const padding = 10
-    const vh = window.innerHeight
-    const vw = window.innerWidth
+    const padding = 8
+    const viewportHeight = window.innerHeight
 
-    // SMART POSITIONING (Prevents clipping at the bottom - e.g. Settings)
-    if (rect.top > vh - 280) {
-      tooltipPosition.top = `${rect.top - 210}px` // Shift above the element
+    // SMART POSITIONING LOGIC
+    // If element is in the bottom 30% of the screen, move tooltip ABOVE the element
+    if (rect.top > viewportHeight * 0.7) {
+      tooltipPosition.top = `${rect.top - 200}px` // Sit above
     } else {
-      tooltipPosition.top = `${rect.top}px`
+      tooltipPosition.top = `${rect.top}px` // Sit beside
     }
 
     if (isMobile) {
-      // On mobile, the sidebar is a drawer. We place the tooltip next to the drawer links.
-      tooltipPosition.left = `${rect.right + 15}px`
-      // Check if tooltip goes off-screen horizontally on small phones
-      if (parseInt(tooltipPosition.left) + 280 > vw) {
-         tooltipPosition.left = '20px'
-         tooltipPosition.top = `${rect.bottom + 15}px`
-      }
+      tooltipPosition.left = '16px'
+      tooltipPosition.top = `${rect.bottom + 12}px`
     } else {
-      tooltipPosition.left = `${rect.right + 25}px`
+      tooltipPosition.left = `${rect.right + 20}px`
     }
 
+    // Highlighting logic
     overlayStyle.value = `clip-path: polygon(
       0% 0%, 0% 100%, 100% 100%, 100% 0%, 0% 0%, 
       ${rect.left - padding}px ${rect.top - padding}px, 
@@ -153,32 +141,25 @@ const skipTour = () => completeTour()
 const completeTour = () => {
   isActive.value = false
   emit('update:isSidebarOpen', false)
-  localStorage.setItem('xeli_tour_complete', 'true')
+  localStorage.setItem('xeli_tour_completed', 'true')
 }
 
 onMounted(() => {
-  const isDone = localStorage.getItem('xeli_tour_complete')
+  const isDone = localStorage.getItem('xeli_tour_completed')
   if (!isDone) {
     setTimeout(() => {
       isActive.value = true
       updatePosition()
-      setInterval(checkConflicts, 500)
-    }, 2000)
+    }, 1200)
   }
-  
-  // Recalculate position on window resize
-  window.addEventListener('resize', updatePosition)
 })
 </script>
 
 <style scoped>
-.tour-fade-enter-active, .tour-fade-leave-active { transition: opacity 0.6s ease; }
-.tour-fade-enter-from, .tour-fade-leave-to { opacity: 0; }
+.fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
 div[style*="clip-path"] {
-  transition: clip-path 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: clip-path 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-/* Hide scrollbar on tooltip if content gets long */
-.custom-scrollbar::-webkit-scrollbar { width: 0px; }
 </style>
