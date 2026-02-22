@@ -23,8 +23,8 @@
         <!-- Navigation -->
         <nav class="mt-6 px-4 space-y-1.5 flex-1 overflow-y-auto custom-scrollbar">
           
-          <!-- Dashboard -->
-          <NuxtLink to="/dashboard"
+          <!-- Dashboard (ID: step-dashboard) -->
+          <NuxtLink id="step-dashboard" to="/dashboard"
             class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group"
             :class="$route.path === '/dashboard' 
               ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' 
@@ -38,8 +38,8 @@
             Dashboard
           </NuxtLink>
 
-          <!-- Chatbot Setup -->
-          <NuxtLink to="/dashboard/chatbot-setup"
+          <!-- Chatbot Setup (ID: step-chatbot) -->
+          <NuxtLink id="step-chatbot" to="/dashboard/chatbot-setup"
             class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group"
             :class="$route.path.startsWith('/dashboard/chatbot-setup') 
               ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' 
@@ -54,8 +54,8 @@
             Chatbot Setup
           </NuxtLink>
 
-          <!-- Knowledge Base -->
-          <NuxtLink to="/dashboard/knowledge-base"
+          <!-- Knowledge Base (ID: step-kb) -->
+          <NuxtLink id="step-kb" to="/dashboard/knowledge-base"
             class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group"
             :class="$route.path.startsWith('/dashboard/knowledge-base') 
               ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' 
@@ -69,7 +69,7 @@
           </NuxtLink>
 
           <!-- Database -->
-          <NuxtLink to="/dashboard/database"
+          <NuxtLink id="step-db" to="/dashboard/database"
             class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group"
             :class="$route.path === '/dashboard/database'
               ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400'
@@ -83,7 +83,7 @@
           </NuxtLink>
 
           <!-- Conversations -->
-          <NuxtLink to="/dashboard/live-monitoring"
+          <NuxtLink id="step-convos" to="/dashboard/live-monitoring"
             class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group"
             :class="$route.path.startsWith('/dashboard/live-monitoring')
               ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' 
@@ -96,8 +96,8 @@
             Conversations
           </NuxtLink>
 
-          <!-- Analytics -->
-          <NuxtLink to="/dashboard/analytics"
+          <!-- Analytics (ID: step-analytics) -->
+          <NuxtLink id="step-analytics" to="/dashboard/analytics"
             class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group"
             :class="$route.path.startsWith('/dashboard/analytics') 
               ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' 
@@ -111,7 +111,7 @@
           </NuxtLink>
 
           <!-- Test Chat -->
-          <NuxtLink to="/dashboard/test-chat"
+          <NuxtLink id="step-test" to="/dashboard/test-chat"
             class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group"
             :class="$route.path.startsWith('/dashboard/test-chat') 
               ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' 
@@ -125,7 +125,7 @@
           </NuxtLink>
 
           <!-- Team Members -->
-          <NuxtLink to="/dashboard/team-members"
+          <NuxtLink id="step-team" to="/dashboard/team-members"
             class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group" 
             :class="$route.path.startsWith('/dashboard/team-members')
               ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' 
@@ -138,7 +138,7 @@
           </NuxtLink>
 
           <!-- Email Marketing -->
-          <NuxtLink to="/dashboard/email-marketing"
+          <NuxtLink id="step-email" to="/dashboard/email-marketing"
             class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group"
             :class="$route.path.startsWith('/dashboard/email-marketing')
               ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' 
@@ -151,7 +151,7 @@
           </NuxtLink>
             
           <!-- Agent Chat -->
-          <NuxtLink to="/dashboard/agent-chat"
+          <NuxtLink id="step-agent" to="/dashboard/agent-chat"
             class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group"
             :class="$route.path.startsWith('/dashboard/agent-chat')
               ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' 
@@ -163,8 +163,8 @@
             Agent Chat
           </NuxtLink>
 
-          <!-- Settings -->
-          <NuxtLink to="/dashboard/settings"
+          <!-- Settings (ID: step-settings) -->
+          <NuxtLink id="step-settings" to="/dashboard/settings"
             class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group"
             :class="$route.path.startsWith('/dashboard/settings')
               ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' 
@@ -224,17 +224,17 @@
           <!-- Navigation (Mobile) -->
            <nav class="space-y-1">
              <!-- Links repeated for mobile -->
-             <NuxtLink to="/dashboard" class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200" :class="$route.path === '/dashboard' ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'">
+             <NuxtLink id="step-dashboard-mob" to="/dashboard" class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200" :class="$route.path === '/dashboard' ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h2a2 2 0 012 2v2H8V5z"></path></svg>
                 Dashboard
              </NuxtLink>
              
-              <NuxtLink to="/dashboard/chatbot-setup" class="flex items-center px-4 py-3 text-sm font-medium rounded-xl" :class="$route.path.startsWith('/dashboard/chatbot-setup') ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'">
+              <NuxtLink id="step-chatbot-mob" to="/dashboard/chatbot-setup" class="flex items-center px-4 py-3 text-sm font-medium rounded-xl" :class="$route.path.startsWith('/dashboard/chatbot-setup') ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                 Chatbot Setup
               </NuxtLink>
 
-              <NuxtLink to="/dashboard/knowledge-base" class="flex items-center px-4 py-3 text-sm font-medium rounded-xl" :class="$route.path.startsWith('/dashboard/knowledge-base') ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'">
+              <NuxtLink id="step-kb-mob" to="/dashboard/knowledge-base" class="flex items-center px-4 py-3 text-sm font-medium rounded-xl" :class="$route.path.startsWith('/dashboard/knowledge-base') ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                 Knowledge Base
               </NuxtLink>
@@ -249,7 +249,7 @@
                 Conversations
               </NuxtLink>
 
-              <NuxtLink to="/dashboard/analytics" class="flex items-center px-4 py-3 text-sm font-medium rounded-xl" :class="$route.path.startsWith('/dashboard/analytics') ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'">
+              <NuxtLink id="step-analytics-mob" to="/dashboard/analytics" class="flex items-center px-4 py-3 text-sm font-medium rounded-xl" :class="$route.path.startsWith('/dashboard/analytics') ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                 Analytics
               </NuxtLink>
@@ -274,7 +274,7 @@
                 Agent Chat
               </NuxtLink>
 
-              <NuxtLink to="/dashboard/settings" class="flex items-center px-4 py-3 text-sm font-medium rounded-xl" :class="$route.path.startsWith('/dashboard/settings') ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'">
+              <NuxtLink id="step-settings-mob" to="/dashboard/settings" class="flex items-center px-4 py-3 text-sm font-medium rounded-xl" :class="$route.path.startsWith('/dashboard/settings') ? 'bg-purple-50 dark:bg-purple-500/10 text-[#9E4CFF] dark:text-purple-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'">
                 <Icon name="lucide:settings" class="w-5 h-5 mr-3" />
                 Settings
               </NuxtLink>
@@ -300,6 +300,9 @@
        <slot />
     </div>
 
+   <!-- Tour Component -->
+    <OnboardingTour v-model:is-sidebar-open="mobileSidebarOpen" />
+
     <!-- Floating Hamburger FAB -->
     <button @click="toggleSidebar"
       class="lg:hidden fixed right-4 bottom-8 z-50 bg-[#9E4CFF]/90 backdrop-blur-md text-white rounded-full p-4 shadow-xl hover:bg-[#8A3DFF] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9E4CFF] transition-all active:scale-95 flex items-center justify-center">
@@ -311,20 +314,35 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '~/stores/authStore'
-import { LogOut, X } from 'lucide-vue-next'
+import { 
+  LayoutDashboard, 
+  Bot, 
+  BookOpen, 
+  BarChart3, 
+  Settings, 
+  LogOut, 
+  Menu, 
+  X 
+} from 'lucide-vue-next'
 import ThemeToggle from '~/components/ui/ThemeToggle.vue'
+import OnboardingTour from '~/components/OnboardingTour.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
+
+// State for mobile sidebar
 const mobileSidebarOpen = ref(false)
 
 const toggleSidebar = () => {
   mobileSidebarOpen.value = !mobileSidebarOpen.value
 }
+
 const closeSidebar = () => {
   mobileSidebarOpen.value = false
 }
@@ -335,6 +353,7 @@ const handleLogout = async () => {
 }
 
 onMounted(() => {
+  
   if (!authStore.isLoggedIn) {
     router.push('/login')
   }
@@ -342,7 +361,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Custom Scrollbar */
+/* Custom Minimalist Scrollbar */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #e2e8f0 transparent;
@@ -351,22 +370,16 @@ onMounted(() => {
   scrollbar-color: #334155 transparent;
 }
 .custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #e2e8f0;
-  border-radius: 20px;
+  background-color: #cbd5e1;
+  border-radius: 10px;
 }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #334155;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #cbd5e1;
-}
-.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: #475569;
 }
 </style>
