@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="tour-fade">
-      <!-- We hide the guide if a modal is detected via the 'isSuppressed' logic -->
+      <!-- Logic: isActive = true, isSuppressed = false (no modal conflict) -->
       <div v-if="isActive && !isSuppressed" class="fixed inset-0 z-[55] pointer-events-none">
         
         <!-- Backdrop with hole -->
@@ -13,7 +13,7 @@
         <!-- Tooltip Card -->
         <div 
           ref="tooltip"
-          class="absolute z-[56] w-[320px] p-6 rounded-[20px] bg-white dark:bg-slate-900 shadow-[0_20px_60px_rgba(0,0,0,0.3)] border border-purple-100 dark:border-white/10 transition-all duration-500 ease-in-out pointer-events-auto"
+          class="absolute z-[56] w-[280px] sm:w-[320px] p-6 rounded-[20px] bg-white dark:bg-slate-900 shadow-[0_20px_60px_rgba(0,0,0,0.3)] border border-purple-100 dark:border-white/10 transition-all duration-500 ease-in-out pointer-events-auto"
           :style="tooltipPosition"
         >
           <div class="flex flex-col gap-5">
@@ -38,13 +38,11 @@
               <button @click="skipTour" class="text-[10px] font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 uppercase tracking-widest transition-colors">
                 Skip Briefing
               </button>
-              <div class="flex gap-2">
-                <button @click="nextStep" 
-                  class="px-5 py-2.5 rounded-xl bg-[#9E4CFF] hover:bg-[#8A3DFF] text-white text-xs font-bold shadow-lg shadow-purple-500/20 active:scale-95 transition-all flex items-center gap-2"
-                >
-                  {{ isLastStep ? 'Complete' : 'Continue' }}
-                </button>
-              </div>
+              <button @click="nextStep" 
+                class="px-5 py-2.5 rounded-xl bg-[#9E4CFF] hover:bg-[#8A3DFF] text-white text-xs font-bold shadow-lg shadow-purple-500/20 active:scale-95 transition-all"
+              >
+                {{ isLastStep ? 'Complete' : 'Continue' }}
+              </button>
             </div>
           </div>
         </div>
@@ -60,31 +58,31 @@ const props = defineProps(['isSidebarOpen'])
 const emit = defineEmits(['update:isSidebarOpen'])
 
 const isActive = ref(false)
-const isSuppressed = ref(false) // Temporarily hide if a modal pops up
+const isSuppressed = ref(false) 
 const currentStep = ref(0)
 const tooltipPosition = reactive({ top: '20px', left: '20px' })
 const overlayStyle = ref('')
 
+// formal terminology matching your sidebar links
 const steps = [
-  { target: '#step-dashboard', title: 'Operational Overview', content: 'Primary monitoring interface for system health and high-level engagement metrics.' },
-  { target: '#step-chatbot', title: 'Agent Architecture', content: 'Configure the core identity, visual parameters, and behavioral logic of your AI nodes.' },
-  { target: '#step-kb', title: 'Information Assets', content: 'Central repository for document ingestion and URL synchronization for AI training.' },
-  { target: '#step-db', title: 'Relational Integration', content: 'Management layer for connecting structured external databases to the AI reasoning engine.' },
-  { target: '#step-convos', title: 'Interaction Audit', content: 'Secure interface for monitoring and auditing live user-to-agent dialogue streams.' },
-  { target: '#step-analytics', title: 'Intelligence Reports', content: 'Detailed statistical analysis regarding user intent and conversion performance.' },
-  { target: '#step-test', title: 'Diagnostic Sandbox', content: 'Secure environment for validating configuration test and monitor knowledge base.' },
-  { target: '#step-team', title: 'Identity Management', content: 'Administrative control for organizational roles, security permissions, and team access.' },
-  { target: '#step-email', title: 'Outbound Automation', content: 'Management of automated communication sequences based on intelligence-driven triggers.' },
-  { target: '#step-agent', title: 'Assisted Transition', content: 'Logic configuration for seamless handoff between AI agents and professional human staff.' },
-  { target: '#step-settings', title: 'System Configuration', content: 'Global administrative preferences, security tokens, and billing infrastructure.' }
+  { target: '#step-dashboard', mobileTarget: '#step-dashboard-mob', title: 'Operational Overview', content: 'Central hub for monitoring real-time system performance and key engagement metrics.' },
+  { target: '#step-chatbot', mobileTarget: '#step-chatbot-mob', title: 'Agent Configuration', content: 'Define behavioral logic, visual identity, and core persona settings for your AI agents.' },
+  { target: '#step-kb', mobileTarget: '#step-kb-mob', title: 'Intelligence Memory', content: 'Securely upload documentation and link URLs to synchronize your AI Knowledge Base.' },
+  { target: '#step-db', mobileTarget: '#step-db-mob', title: 'Relational Integration', content: 'Management interface for connecting external structured databases to the AI engine.' },
+  { target: '#step-convos', mobileTarget: '#step-convos-mob', title: 'Interaction Audit', content: 'Review live interaction streams to ensure quality control and conversational accuracy.' },
+  { target: '#step-analytics', mobileTarget: '#step-analytics-mob', title: 'Data Insights', content: 'Access comprehensive reports regarding user intent trends and conversion statistics.' },
+  { target: '#step-test', mobileTarget: '#step-test-mob', title: 'Diagnostic Sandbox', content: 'Validate configuration updates and test Knowledge Base accuracy before deployment.' },
+  { target: '#step-team', mobileTarget: '#step-team-mob', title: 'Identity Management', content: 'Administrative control for organizational roles, team access, and security permissions.' },
+  { target: '#step-email', mobileTarget: '#step-email-mob', title: 'Outbound Automation', content: 'Configure automated communication sequences triggered by AI-detected leads.' },
+  { target: '#step-agent', mobileTarget: '#step-agent-mob', title: 'Assisted Transition', content: 'Logic parameters for seamless hand-off from AI agents to professional human staff.' },
+  { target: '#step-settings', mobileTarget: '#step-settings-mob', title: 'System Preferences', content: 'Configure global account settings, API keys, and subscription infrastructure.' }
 ]
 
 const isLastStep = computed(() => currentStep.value === steps.length - 1)
 
-// CHECK FOR ACTIVE MODALS
-// If there is any element with z-[60] or higher, we suppress the guide
+// Conflict check for z-60 modals
 const checkConflicts = () => {
-  const modalBackdrop = document.querySelector('.bg-gray-900\\/40'); // Matches your modal backdrop class
+  const modalBackdrop = document.querySelector('.bg-gray-900\\/40'); 
   isSuppressed.value = !!modalBackdrop;
 }
 
@@ -93,30 +91,39 @@ const updatePosition = async () => {
   checkConflicts()
 
   const isMobile = window.innerWidth < 1024
+  
+  // CRITICAL MOBILE FIX: Force sidebar open if it's closed during the tour
   if (isMobile && !props.isSidebarOpen) {
     emit('update:isSidebarOpen', true)
-    await new Promise(r => setTimeout(r, 400))
+    // Wait for the sidebar transition to finish before calculating positions
+    await new Promise(r => setTimeout(r, 450)) 
   }
 
   const step = steps[currentStep.value]
-  const el = document.querySelector(step.target)
+  const targetId = isMobile ? step.mobileTarget : step.target
+  const el = document.querySelector(targetId)
   
   if (el) {
     const rect = el.getBoundingClientRect()
     const padding = 10
     const vh = window.innerHeight
+    const vw = window.innerWidth
 
-    // SMART POSITIONING (Prevents settings overflow)
-    // If the element is too low on the screen, show tooltip ABOVE it
-    if (rect.top > vh - 260) {
-      tooltipPosition.top = `${rect.top - 200}px` 
+    // SMART POSITIONING (Prevents clipping at the bottom - e.g. Settings)
+    if (rect.top > vh - 280) {
+      tooltipPosition.top = `${rect.top - 210}px` // Shift above the element
     } else {
       tooltipPosition.top = `${rect.top}px`
     }
 
     if (isMobile) {
-      tooltipPosition.left = '10px'
-      tooltipPosition.top = `${rect.bottom + 15}px`
+      // On mobile, the sidebar is a drawer. We place the tooltip next to the drawer links.
+      tooltipPosition.left = `${rect.right + 15}px`
+      // Check if tooltip goes off-screen horizontally on small phones
+      if (parseInt(tooltipPosition.left) + 280 > vw) {
+         tooltipPosition.left = '20px'
+         tooltipPosition.top = `${rect.bottom + 15}px`
+      }
     } else {
       tooltipPosition.left = `${rect.right + 25}px`
     }
@@ -152,13 +159,15 @@ const completeTour = () => {
 onMounted(() => {
   const isDone = localStorage.getItem('xeli_tour_complete')
   if (!isDone) {
-    
     setTimeout(() => {
       isActive.value = true
       updatePosition()
       setInterval(checkConflicts, 500)
     }, 2000)
   }
+  
+  // Recalculate position on window resize
+  window.addEventListener('resize', updatePosition)
 })
 </script>
 
@@ -169,4 +178,7 @@ onMounted(() => {
 div[style*="clip-path"] {
   transition: clip-path 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Hide scrollbar on tooltip if content gets long */
+.custom-scrollbar::-webkit-scrollbar { width: 0px; }
 </style>

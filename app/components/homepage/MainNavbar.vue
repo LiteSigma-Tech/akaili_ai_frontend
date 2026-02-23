@@ -44,11 +44,13 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
 
 <template>
    <nav 
-     class="transition-all duration-300 h-16 md:h-20 z-[100] fixed w-full 
-           bg-white/90 backdrop-blur-md 
-           dark:bg-slate-900/95 dark:border-slate-800 border-b border-transparent"
-    role="navigation" 
-    aria-label="Main navigation"
+     class="transition-all duration-300 h-16 md:h-20 z-[100] fixed top-0 inset-x-0
+         bg-white/90 backdrop-blur-md 
+         dark:bg-slate-900/95 dark:border-slate-800 border-b border-transparent
+         
+         "
+  role="navigation" 
+  aria-label="Main navigation"
   >
     <div class="flex items-center h-full md:w-[95%] lg:w-[95%] justify-between sm:w-[80%] mx-[2rem]">
       <!-- LOGO -->
