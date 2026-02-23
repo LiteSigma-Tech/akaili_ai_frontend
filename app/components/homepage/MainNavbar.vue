@@ -47,7 +47,7 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
      class="transition-all duration-300 h-16 md:h-20 z-[100] fixed top-0 inset-x-0
          bg-white/90 backdrop-blur-md 
          dark:bg-slate-900/95 dark:border-slate-800 border-b border-transparent
-         overflow-hidden
+         
          "
   role="navigation" 
   aria-label="Main navigation"
