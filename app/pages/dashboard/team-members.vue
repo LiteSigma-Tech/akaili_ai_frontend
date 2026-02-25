@@ -34,6 +34,7 @@
         </div>
       </div>
 
+      <!-- Active Roles -->
       <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm dark:shadow-none border border-gray-100 dark:border-slate-800 transition-colors group hover:border-blue-200 dark:hover:border-blue-900/50">
         <div class="flex items-center justify-between">
           <div>

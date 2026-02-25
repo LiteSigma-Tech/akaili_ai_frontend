@@ -1,4 +1,3 @@
-<!-- dashboard/index.vue -->
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-300">
      
@@ -114,15 +113,13 @@
 </template>
 
 <script setup>
-
-import StatCard from '~/components/StatCard.vue'
-import EmptyState from '~/components/EmptyState.vue'
-import { Plus } from 'lucide-vue-next'
-
 definePageMeta({
   layout: 'dashboard'
 })
 
+import StatCard from '~/components/StatCard.vue'
+import EmptyState from '~/components/EmptyState.vue'
+import { Plus } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const config = useRuntimeConfig()

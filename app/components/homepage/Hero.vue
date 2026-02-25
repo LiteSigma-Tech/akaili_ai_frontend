@@ -80,21 +80,14 @@
               Start Free Trial
             </NuxtLink>
             
-            <!-- TRIGGER MODAL HERE -->
-            <button 
-              @click="isDemoOpen = true"
-              class="w-full sm:w-auto px-10 py-5 text-lg border rounded-2xl font-medium shadow-sm transition-colors flex items-center justify-center gap-2 group bg-white text-slate-700 border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:text-gray-200 dark:border-slate-700 dark:hover:bg-slate-700"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="text-gray-400 group-hover:text-[#9E4CFF] transition-colors">
+            <button class="w-full sm:w-auto px-10 py-5 text-lg border rounded-2xl font-medium shadow-sm transition-colors flex items-center justify-center gap-2 group bg-white text-slate-700 border-gray-200 hover:bg-gray-50 dark:bg-slate-800 dark:text-gray-200 dark:border-slate-700 dark:hover:bg-slate-700">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-gray-400 group-hover:text-[#9E4CFF] transition-colors">
                 <path d="M5 3L19 12L5 21V3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               Watch Demo
             </button>
           </div>
           
-    <!-- Add the Modal Component -->
-    <DemoModal :is-open="isDemoOpen" @close="isDemoOpen = false" />
-
           <!-- Social Proof -->
           <div class="mt-10 flex items-center justify-center lg:justify-start gap-4 text-sm text-gray-500 dark:text-gray-400">
             <div class="flex -space-x-3">
@@ -118,11 +111,9 @@
 <script setup>
 import RotatingText from './rotatingText.vue';
 import HeroDashboard from './HeroDashboard.vue';
-import DemoModal from './DemoModal.vue';
 import { ref, onMounted, reactive } from 'vue';
 
 const heroSection = ref(null);
-const isDemoOpen = ref(false);
 const baseCircles = [{ color: '#E9D5FF', opacity: 0.6 }, { color: '#BFDBFE', opacity: 0.5 }, { color: '#FBCFE8', opacity: 0.4 }];
 const circles = reactive([]);
 
