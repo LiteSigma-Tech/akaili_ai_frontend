@@ -47,25 +47,22 @@
           </div>
 
           <!-- Main Header (Updated Font Sizes: 3xl/4xl/5xl) -->
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-6 leading-[1.1] transition-colors text-gray-900 dark:text-white">
-            Empower Your Site
-            <span class="block text-transparent bg-clip-text pb-2 bg-gradient-to-r from-[#9E4CFF] to-blue-600 dark:from-[#c084fc] dark:to-blue-400">
-              with 24/7 Smart
-            </span>
-            <span class="inline-block mt-2 align-middle">
-              <RotatingText
-                 :texts="['Customer-Support', 'Sales-Assistant', 'Task-Automation', 'User-Engagement','Role-Based-Login']"
-                main-class-name="px-3 py-1 rounded-xl inline-block text-3xl sm:text-4xl lg:text-5xl leading-[1.1] transition-colors text-[#9E4CFF] bg-purple-100 dark:text-purple-300 dark:bg-purple-900/50"
-                :stagger-from="'last'"
-                :initial="{ y: '100%' }"
-                :animate="{ y: 0 }"
-                :exit="{ y: '-120%' }"
-                :transition="{ type: 'spring', damping: 20, stiffness: 300 }"
-                :rotation-interval="3000"
-              />
-            </span>
-          </h1>
-
+          <!-- Inside Hero.vue -->
+<h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-6 leading-[1.1] text-gray-900 dark:text-white">
+  Empower Your Site
+  <span class="block text-transparent bg-clip-text pb-2 bg-gradient-to-r from-[#9E4CFF] to-blue-600 dark:from-[#c084fc] dark:to-blue-400">
+    with 24/7 Smart
+  </span>
+  
+  <!-- Optimized Wrapper -->
+  <div class="mt-2 flex items-center justify-center lg:justify-start">
+    <RotatingText
+      :texts="['Customer-Support', 'Sales-Assistant', 'Task-Automation', 'User-Engagement', 'Role-Based-Login']"
+      main-className="px-4 py-1 rounded-2xl text-[#9E4CFF] bg-purple-100/80 dark:text-purple-300 dark:bg-purple-900/40 backdrop-blur-sm border border-purple-200/50 dark:border-purple-700/30"
+      :interval="3500"
+    />
+  </div>
+</h1>
           <p class="mt-8 text-xl leading-relaxed max-w-2xl mx-auto lg:mx-0 font-medium transition-colors text-gray-600 dark:text-gray-300">
             Seamlessly integrate intelligent chatbots that connect to your databases, learn from
             your content, and provide instant enterprise-grade support.
