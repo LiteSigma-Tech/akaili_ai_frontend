@@ -1,226 +1,285 @@
-<!-- pages/dashboard/test-chat.vue -->
 <template>
-    <div class="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-300 p-6">
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Test Your Chatbot</h1>
-            <p class="text-gray-600 dark:text-gray-400 mt-2">
-                Test your AI assistant here to see how it responds to questions based on your connected data.
-            </p>
+    <div class="h-[100dvh] bg-white dark:bg-slate-950 flex flex-col overflow-hidden selection:bg-purple-500/30 font-sans">
+        
+        <!-- ══════════════════════════════════
+             DESKTOP HEADER
+             ══════════════════════════════════ -->
+        <div class="hidden md:block p-6 bg-gray-50 dark:bg-slate-950 border-b border-gray-200 dark:border-slate-800 shrink-0">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white uppercase italic tracking-tighter">Test Sandbox</h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-1 text-sm">Validate neural responses and database citations in a secure environment.</p>
         </div>
 
-        <!-- Loading -->
-        <div v-if="chatbotStore.loading" class="flex items-center justify-center py-12">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#9E4CFF]"></div>
-            <span class="ml-2 text-gray-600 dark:text-gray-400">Loading chatbots...</span>
-        </div>
+        <!-- ══════════════════════════════════
+             MOBILE TOP BAR (OpenAI Inspired)
+             ══════════════════════════════════ -->
+        <header class="md:hidden sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 px-4 h-14 flex items-center justify-between shrink-0">
+            <!-- Left: History Toggle -->
+            <button @click="mobilePanel = 'history'" class="p-2 -ml-2 text-slate-500 dark:text-slate-400 active:scale-90 transition-transform">
+                <HistoryIcon class="w-5 h-5" />
+            </button>
 
-        <!-- No Chatbots -->
-        <div v-else-if="availableChatbots.length === 0" class="text-center py-12">
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-lg mx-auto">
-                <h3 class="text-lg font-medium text-yellow-800 mb-2">No Chatbots Found</h3>
-                <p class="text-yellow-700 mb-4">You need to create a chatbot first before you can test it here.</p>
-                <NuxtLink to="/dashboard/chatbot-setup"
-                    class="inline-flex items-center px-4 py-2 bg-[#9E4CFF] text-white rounded-lg hover:bg-purple-700 transition-colors">
-                    Create Your First Chatbot
-                </NuxtLink>
-            </div>
-        </div>
+            <!-- Center: Bot & Status Switcher -->
+            <button @click="mobilePanel = 'settings'" class="flex flex-col items-center max-w-[200px] group">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-sm font-bold text-slate-900 dark:text-white truncate">{{ selectedChatbot?.name || 'Select Bot' }}</span>
+                    <ChevronDown class="w-3.5 h-3.5 text-slate-400 group-hover:text-[#9E4CFF] transition-colors" />
+                </div>
+                <div class="flex items-center gap-1">
+                    <div :class="selectedChatbot?.is_active ? 'bg-green-500' : 'bg-yellow-500'" class="w-1 h-1 rounded-full"></div>
+                    <span class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">
+                        {{ selectedChatbot?.is_active ? 'Active' : 'Offline' }} • {{ connectedDatabases }} Sources
+                    </span>
+                </div>
+            </button>
 
-        <!-- Main Layout -->
-        <div v-else class="flex gap-6 max-w-7xl mx-auto">
+            <!-- Right: Reset Chat -->
+            <button @click="onChatbotChange" class="p-2 -mr-2 text-slate-500 dark:text-slate-400 active:scale-90 transition-transform">
+                <PlusIcon class="w-5 h-5" />
+            </button>
+        </header>
+
+        <!-- Main Layout Wrapper -->
+        <div class="flex-1 flex flex-col md:flex-row md:gap-6 md:p-6 max-w-7xl mx-auto w-full min-h-0 overflow-hidden">
 
             <!-- ══════════════════════════════════
-                 LEFT: History Sidebar
+                 LEFT SIDEBAR (Desktop Only)
                  ══════════════════════════════════ -->
-            <div class="w-72 shrink-0 flex flex-col gap-4">
-
-                <!-- Chatbot + Mode selectors -->
-                <div
-                    class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm space-y-4">
+            <aside class="hidden md:flex w-72 shrink-0 flex-col gap-4 overflow-y-auto no-scrollbar">
+                <!-- Configuration -->
+                <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm space-y-4">
                     <div>
-                        <label
-                            class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Chatbot</label>
-                        <select v-model="selectedChatbotId" @change="onChatbotChange"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors">
-                            <option v-for="chatbot in availableChatbots" :key="chatbot.id" :value="chatbot.id">
-                                {{ chatbot.name }}
-                            </option>
+                        <label class="block text-[10px] font-black text-gray-400 mb-1.5 uppercase tracking-widest">Target Agent</label>
+                        <select v-model="selectedChatbotId" @change="onChatbotChange" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-lg outline-none focus:ring-2 focus:ring-purple-500 transition-colors">
+                            <option v-for="bot in availableChatbots" :key="bot.id" :value="bot.id">{{ bot.name }}</option>
                         </select>
                     </div>
-
                     <div>
-                        <label
-                            class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wide">Test
-                            Mode</label>
-                        <select v-model="testMode"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors">
-                            <option value="default">Default (As You)</option>
+                        <label class="block text-[10px] font-black text-gray-400 mb-1.5 uppercase tracking-widest">Environment Mode</label>
+                        <select v-model="testMode" class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-lg outline-none">
+                            <option value="default">Default (Admin)</option>
                             <option value="authenticated">Simulate Customer</option>
                             <option value="anonymous">Simulate Anonymous</option>
                         </select>
-                        <!-- Customer data inputs -->
-                        <div v-if="testMode === 'authenticated'"
-                            class="mt-3 space-y-2 p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-700">
-                            <input v-model="testCustomerData.id" type="text" placeholder="Customer ID"
-                                class="w-full px-2.5 py-1.5 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" />
-                            <input v-model="testCustomerData.name" type="text" placeholder="Customer Name"
-                                class="w-full px-2.5 py-1.5 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" />
-                            <input v-model="testCustomerData.email" type="email" placeholder="Customer Email"
-                                class="w-full px-2.5 py-1.5 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                        <div v-if="testMode === 'authenticated'" class="mt-3 space-y-2 p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-700">
+                            <input v-model="testCustomerData.id" type="text" placeholder="ID" class="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-[10px] outline-none" />
+                            <input v-model="testCustomerData.name" type="text" placeholder="Name" class="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-[10px] outline-none" />
+                            <input v-model="testCustomerData.email" type="email" placeholder="Email" class="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-[10px] outline-none" />
                         </div>
                     </div>
                 </div>
 
-                <!-- Status mini-cards -->
-                <div class="grid grid-cols-1 gap-2">
-                    <div
-                        class="bg-white dark:bg-slate-900 px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-800 border-l-4 border-l-blue-500 shadow-sm">
-                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Status</p>
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">
-                            {{ selectedChatbot?.is_active ? '✅ Active' : '⚠️ Inactive' }}
-                        </p>
+                <!-- Interaction logs (History) -->
+                <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden flex-1 flex flex-col min-h-0">
+                    <div class="px-4 py-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
+                        <span class="font-black uppercase text-[10px] tracking-widest text-slate-400">Interaction Logs</span>
+                        <button @click="loadSessionHistory" class="text-[9px] font-black text-[#9E4CFF] hover:underline uppercase">Refresh</button>
                     </div>
-                    <div
-                        class="bg-white dark:bg-slate-900 px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-800 border-l-4 border-l-green-500 shadow-sm">
-                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Data Sources</p>
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">{{ connectedDatabases }}
-                            connected</p>
-                    </div>
-                </div>
-
-                <!-- Session History (last 24h) -->
-                <div
-                    class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden flex-1">
-                    <div
-                        class="px-4 py-3 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
-                        <h3 class="text-sm font-bold text-gray-900 dark:text-white">Session History</h3>
-                        <span class="text-[10px] text-gray-400 bg-gray-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Last
-                            24h</span>
-                    </div>
-
-                    <!-- Loading sessions -->
-                    <div v-if="historyLoading" class="p-4 flex items-center gap-2 text-xs text-gray-400">
-                        <div
-                            class="animate-spin w-3.5 h-3.5 border-2 border-purple-500 border-t-transparent rounded-full">
-                        </div>
-                        Loading sessions...
-                    </div>
-
-                    <!-- Empty -->
-                    <div v-else-if="sessionHistory.length === 0" class="p-4 text-center">
-                        <p class="text-xs text-gray-400 dark:text-gray-500">No past sessions in the last 24 hours.</p>
-                        <p class="text-[10px] text-gray-300 dark:text-gray-600 mt-1">Start a conversation to see history
-                            here.</p>
-                    </div>
-
-                    <!-- Session list -->
-                    <div v-else class="divide-y divide-gray-100 dark:divide-slate-800 max-h-80 overflow-y-auto">
-                        <button v-for="session in sessionHistory" :key="session.session_id"
-                            @click="restoreSession(session)" :class="[
-                                'w-full text-left px-4 py-3 transition-colors',
-                                activeSessionId === session.session_id
-                                    ? 'bg-purple-50 dark:bg-purple-900/20'
-                                    : 'hover:bg-gray-50 dark:hover:bg-slate-800/50'
-                            ]">
-                            <p class="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">{{
-                                session.preview || 'Empty session' }}</p>
-                            <div class="flex items-center justify-between mt-1">
-                                <span class="text-[10px] text-gray-400">{{ session.message_count }} msgs</span>
-                                <span class="text-[10px] text-gray-400">{{ formatRelative(session.last_activity)
-                                    }}</span>
-                            </div>
-                        </button>
-                    </div>
-
-                    <div class="px-4 py-3 border-t border-gray-100 dark:border-slate-800">
-                        <button @click="loadSessionHistory"
-                            class="text-xs text-[#9E4CFF] dark:text-purple-400 font-semibold hover:underline">
-                            Refresh history
+                    <div class="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-800 no-scrollbar">
+                        <div v-if="historyLoading" class="p-4 text-[10px] text-gray-400 italic">Syncing...</div>
+                        <button v-for="session in sessionHistory" :key="session.session_id" @click="restoreSession(session)"
+                            :class="['w-full text-left px-4 py-4 transition-colors', activeSessionId === session.session_id ? 'bg-purple-50 dark:bg-purple-900/20 border-r-2 border-purple-500' : 'hover:bg-gray-50 dark:hover:bg-slate-800/50']">
+                            <p class="text-xs font-bold text-slate-900 dark:text-slate-100 truncate leading-tight mb-1">{{ session.preview || 'Untitled Interaction' }}</p>
+                            <span class="text-[10px] font-medium text-gray-400 uppercase tracking-tighter">{{ formatRelative(session.last_activity) }}</span>
                         </button>
                     </div>
                 </div>
-            </div>
+            </aside>
 
             <!-- ══════════════════════════════════
-                 RIGHT: Chat Widget
+                 MAIN CHAT AREA (Shared)
                  ══════════════════════════════════ -->
-            <div class="flex-1 min-w-0">
-                <ChatWidget v-if="selectedChatbotId" ref="chatWidgetRef" :key="widgetKey"
-                    :chatbot-id="selectedChatbotId" :chatbot-name="selectedChatbot?.name || 'AI Assistant'"
-                    :test-mode="testMode" :test-customer-data="testMode === 'authenticated' ? testCustomerData : null"
-                    :restore-session="sessionToRestore" @session-saved="onSessionSaved" />
+            <div class="flex-1 bg-white dark:bg-slate-950 md:bg-white md:dark:bg-slate-900 md:rounded-2xl md:border border-gray-200 dark:border-slate-800 flex flex-col overflow-hidden relative">
+                <ChatWidget 
+                    v-if="selectedChatbotId" 
+                    ref="chatWidgetRef" 
+                    :key="widgetKey"
+                    :chatbot-id="selectedChatbotId" 
+                    :chatbot-name="selectedChatbot?.name || 'AI Assistant'"
+                    :test-mode="testMode" 
+                    :test-customer-data="testMode === 'authenticated' ? testCustomerData : null"
+                    :restore-session="sessionToRestore" 
+                    @session-saved="onSessionSaved"
+                    class="h-full w-full" 
+                />
             </div>
         </div>
 
-        <!-- Tips section -->
-        <div
-            class="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 rounded-xl p-6 mt-8 max-w-7xl mx-auto">
-            <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-300 mb-3">💡 Testing Tips</h3>
-            <ul class="text-sm text-blue-800 dark:text-blue-400 space-y-2">
-                <li>• Ask questions related to your connected database data</li>
-                <li>• Try follow-up questions to test conversation memory</li>
-                <li>• Check if sources are properly cited in responses</li>
-                <li>• Sessions are automatically saved for 24 hours — use the history panel to resume them</li>
-                <li>• Click any past session in the sidebar to restore it</li>
-            </ul>
+        <!-- ══════════════════════════════════
+             TESTING TIPS (Desktop Only Bottom)
+             ══════════════════════════════════ -->
+        <div class="hidden md:block bg-slate-50 dark:bg-slate-900/50 border-t border-gray-200 dark:border-slate-800 p-6 shrink-0">
+            <div class="max-w-7xl mx-auto flex items-start gap-6">
+                <div class="flex items-center gap-2 text-blue-500 shrink-0">
+                    <Lightbulb class="w-5 h-5" />
+                    <span class="text-xs font-black uppercase tracking-widest">💡 Testing Tips</span>
+                </div>
+                <ul class="flex-1 grid grid-cols-3 gap-x-8 gap-y-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                    <li>• Ask questions related to your connected database data</li>
+                    <li>• Try follow-up questions to test conversation memory</li>
+                    <li>• Check if sources are properly cited in responses</li>
+                    <li>• Sessions are automatically saved for 24 hours</li>
+                    <li>• Click any past session in the sidebar to restore it</li>
+                </ul>
+            </div>
         </div>
+
+        <!-- ══════════════════════════════════
+             MOBILE CONFIGURATION (Settings Sheet)
+             ══════════════════════════════════ -->
+        <Teleport to="body">
+            <Transition name="sheet">
+                <div v-if="mobilePanel === 'settings'" class="fixed inset-0 z-50 flex items-end justify-center md:hidden">
+                    <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" @click="mobilePanel = null"></div>
+                    <div class="relative w-full bg-white dark:bg-slate-900 rounded-t-[32px] shadow-2xl p-6 flex flex-col max-h-[90vh] overflow-y-auto no-scrollbar">
+                        <div class="w-10 h-1 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mb-8 shrink-0"></div>
+                        <h3 class="text-xl font-black uppercase italic tracking-tighter mb-6">Environment Settings</h3>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Available Agents</label>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <button v-for="bot in availableChatbots" :key="bot.id" 
+                                            @click="selectedChatbotId = bot.id; onChatbotChange();"
+                                            class="w-full text-left px-5 py-4 rounded-2xl border-2 transition-all"
+                                            :class="selectedChatbotId === bot.id ? 'border-[#9E4CFF] bg-purple-50 dark:bg-purple-900/20 text-[#9E4CFF]' : 'border-slate-100 dark:border-slate-800 dark:text-white'">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-bold">{{ bot.name }}</span>
+                                            <div v-if="selectedChatbotId === bot.id" class="w-2 h-2 rounded-full bg-[#9E4CFF]"></div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                                    <span class="block text-[9px] font-black text-slate-400 uppercase mb-1">Status</span>
+                                    <span class="text-xs font-bold dark:text-white uppercase">{{ selectedChatbot?.is_active ? 'Active' : 'Offline' }}</span>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                                    <span class="block text-[9px] font-black text-slate-400 uppercase mb-1">Citations</span>
+                                    <span class="text-xs font-bold dark:text-white uppercase">{{ connectedDatabases }} Sources</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Simulation Persona</label>
+                                <div class="flex flex-wrap gap-2">
+                                    <button v-for="m in ['default', 'authenticated', 'anonymous']" :key="m" @click="testMode = m"
+                                            class="px-4 py-2 rounded-full border-2 text-[10px] font-black uppercase transition-all"
+                                            :class="testMode === m ? 'border-[#9E4CFF] bg-[#9E4CFF] text-white' : 'border-slate-100 dark:border-slate-800 text-slate-400'">
+                                        {{ m }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div v-if="testMode === 'authenticated'" class="space-y-3 p-4 rounded-2xl bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/20">
+                                <input v-model="testCustomerData.name" type="text" placeholder="Full Name" class="w-full p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-base outline-none focus:ring-2 focus:ring-purple-500 transition-all text-slate-900 dark:text-white" />
+                                <input v-model="testCustomerData.email" type="email" placeholder="Email Address" class="w-full p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-base outline-none focus:ring-2 focus:ring-purple-500 transition-all text-slate-900 dark:text-white" />
+                            </div>
+                        </div>
+                        <button @click="mobilePanel = null" class="mt-8 w-full py-5 bg-slate-950 dark:bg-white text-white dark:text-slate-950 rounded-2xl font-black uppercase tracking-widest text-xs">Confirm Settings</button>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
+        <!-- ══════════════════════════════════
+             MOBILE HISTORY (Side Sheet)
+             ══════════════════════════════════ -->
+        <Teleport to="body">
+            <Transition name="sheet-left">
+                <div v-if="mobilePanel === 'history'" class="fixed inset-0 z-50 flex md:hidden">
+                    <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" @click="mobilePanel = null"></div>
+                    <div class="relative w-[85%] max-w-[320px] bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col">
+                        <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <h3 class="text-lg font-black uppercase italic tracking-tighter">Interaction Logs</h3>
+                            <button @click="mobilePanel = null" class="p-2 rounded-full bg-slate-50 dark:bg-slate-800"><XIcon class="w-4 h-4 dark:text-white" /></button>
+                        </div>
+                        <div class="px-6 py-4 flex justify-end">
+                            <button @click="loadSessionHistory" class="text-[10px] font-black text-[#9E4CFF] uppercase">Refresh history</button>
+                        </div>
+                        <div class="flex-1 overflow-y-auto px-4 space-y-2 no-scrollbar">
+                            <div v-if="sessionHistory.length === 0" class="py-20 text-center opacity-30 font-bold uppercase text-[10px]">No logs found</div>
+                            <button v-for="session in sessionHistory" :key="session.session_id" @click="restoreSessionMobile(session)" 
+                                    class="w-full text-left p-4 rounded-2xl border border-slate-100 dark:border-slate-800 active:bg-slate-50 dark:active:bg-slate-800 transition-colors">
+                                <p class="font-bold text-xs truncate leading-tight mb-1 text-slate-900 dark:text-white">{{ session.preview || 'Untitled session' }}</p>
+                                <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">{{ formatRelative(session.last_activity) }}</span>
+                            </button>
+                        </div>
+
+                        <!-- Testing Tips (Mobile Bottom) -->
+                        <div class="p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 space-y-4">
+                             <h4 class="text-[10px] font-black uppercase text-blue-500 tracking-widest">💡 Testing Tips</h4>
+                             <ul class="space-y-3">
+                                <li v-for="tip in ['Ask database related data', 'Test follow-up memory', 'Verify cited responses', 'Restore past sessions here']" :key="tip" class="flex items-start gap-2 text-[10px] font-bold text-slate-500">
+                                    <div class="w-1 h-1 rounded-full bg-blue-500 mt-1"></div> {{ tip }}
+                                </li>
+                             </ul>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { 
+    History as HistoryIcon, 
+    Settings2, 
+    ChevronDown, 
+    Plus as PlusIcon, 
+    X as XIcon,
+    Lightbulb
+} from 'lucide-vue-next'
 import ChatWidget from '~/components/chatbot-setup/ChatWidget.vue'
 
 definePageMeta({ layout: 'dashboard' })
 
 const chatbotStore = useChatbotStore()
 const databaseStore = useDatabaseStore()
-const conversationStore = useConversationStore()
 const { token } = useAuthStore()
 const config = useRuntimeConfig()
 
 const selectedChatbotId = ref('')
 const testMode = ref('default')
 const testCustomerData = ref({ id: '', name: '', email: '' })
+const mobilePanel = ref(null)
 
 const sessionHistory = ref([])
 const historyLoading = ref(false)
 const activeSessionId = ref(null)
 const sessionToRestore = ref(null)
-const widgetKey = ref(0)   // bump to remount ChatWidget on session restore
-const chatWidgetRef = ref(null)
+const widgetKey = ref(0)
 
 const availableChatbots = computed(() => chatbotStore.chatbots || [])
 const selectedChatbot = computed(() => availableChatbots.value.find(b => b.id === selectedChatbotId.value))
 const connectedDatabases = computed(() => databaseStore.connections?.filter(c => c.status === 'connected').length || 0)
 
-// ── Load session history from backend ──
+const restoreSessionMobile = (session) => { restoreSession(session); mobilePanel.value = null }
+
 const loadSessionHistory = async () => {
     if (!selectedChatbotId.value) return
     historyLoading.value = true
     try {
-        const data = await $fetch(
-            `${config.public.apiBase}/api/conversation/test-sessions?chatbot_id=${selectedChatbotId.value}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-        )
+        const data = await $fetch(`${config.public.apiBase}/api/conversation/test-sessions?chatbot_id=${selectedChatbotId.value}`, { 
+            headers: { Authorization: `Bearer ${token}` } 
+        })
         sessionHistory.value = data.data?.sessions ?? []
     } catch (e) {
-        console.error('Failed to load session history', e)
         sessionHistory.value = []
     } finally {
         historyLoading.value = false
     }
 }
 
-// ── Restore a past session into the chat widget ──
 const restoreSession = (session) => {
     activeSessionId.value = session.session_id
-    sessionToRestore.value = session  // passes to ChatWidget via prop
-    widgetKey.value++                 // forces remount with fresh state
+    sessionToRestore.value = session
+    widgetKey.value++
 }
 
-// ── When chatbot changes, reload history and reset widget ──
 const onChatbotChange = () => {
     sessionToRestore.value = null
     activeSessionId.value = null
@@ -228,9 +287,7 @@ const onChatbotChange = () => {
     loadSessionHistory()
 }
 
-// ── When ChatWidget emits a new save, refresh the history list ──
 const onSessionSaved = async (info) => {
-    // Optimistically update/add entry in local list
     const existing = sessionHistory.value.find(s => s.session_id === info.sessionId)
     if (existing) {
         existing.message_count = info.messageCount
@@ -239,8 +296,6 @@ const onSessionSaved = async (info) => {
     } else {
         sessionHistory.value.unshift({
             session_id: info.sessionId,
-            conversation_id: info.conversationId,
-            message_count: info.messageCount,
             preview: info.preview,
             last_activity: new Date().toISOString(),
             chatbot_id: selectedChatbotId.value,
@@ -256,32 +311,30 @@ const formatRelative = (dateStr) => {
     if (mins < 1) return 'just now'
     if (mins < 60) return `${mins}m ago`
     const hrs = Math.floor(mins / 60)
-    return hrs < 24 ? `${hrs}h ago` : new Date(dateStr).toLocaleDateString()
-}
-
-const autoSelectChatbot = () => {
-    if (availableChatbots.value.length > 0 && !selectedChatbotId.value) {
-        selectedChatbotId.value = availableChatbots.value[0].id
-    }
+    return hrs < 24 ? `${hrs}h ago` : new Date(dateStr).toLocaleDateString([], { month: 'short', day: 'numeric' })
 }
 
 onMounted(async () => {
-    try {
-        await Promise.all([
-            chatbotStore.fetchChatbots(),
-            databaseStore.fetchConnections()
-        ])
-        autoSelectChatbot()
-        if (selectedChatbotId.value) {
-            await loadSessionHistory()
-        }
-    } catch (error) {
-        console.error('Error loading data:', error)
+    await Promise.all([chatbotStore.fetchChatbots(), databaseStore.fetchConnections()])
+    if (availableChatbots.value.length > 0) {
+        selectedChatbotId.value = availableChatbots.value[0].id
+        await loadSessionHistory()
     }
 })
 
-// Reload history when chatbot selection changes (without clicking the select)
-watch(selectedChatbotId, (newId) => {
-    if (newId) loadSessionHistory()
-})
+watch(selectedChatbotId, (newId) => { if (newId) loadSessionHistory() })
 </script>
+
+<style scoped>
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Transitions */
+.sheet-enter-active, .sheet-leave-active, 
+.sheet-left-enter-active, .sheet-left-leave-active {
+    transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+
+.sheet-enter-from, .sheet-leave-to { transform: translateY(100%); opacity: 0; }
+.sheet-left-enter-from, .sheet-left-leave-to { transform: translateX(-100%); }
+</style>
