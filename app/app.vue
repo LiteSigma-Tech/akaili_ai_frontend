@@ -24,9 +24,26 @@ const authStore = useAuthStore()
 const wsStore = useWebSocketStore()
 const subscriptionStore = useSubscriptionStore()
 
-// Log when app mounts
 onMounted(async () => {
   console.log('[APP.VUE] App mounted')
+
+  // 🔹 Load Chat Widget
+  const WIDGET_SRC = 'https://api.xeliai.com/api/widget/NjlhNjZhOWIwYjg2OTJlOGM4MDUxZjkzOjY5YTY2YzNjNWRmOWEzMzNlNjAwZWM1Njo4NzBlZDMzNmE2ZjQwNmRlZDI3MmQxMWVkZTVjMzE5YmU5YWE5MmRkZDY0MGUwZjg3MDlmM2JjNzkzY2FhMmYw/script.js'
+
+  if (!document.querySelector(`script[src="${WIDGET_SRC}"]`)) {
+    const script = document.createElement('script')
+    script.src = WIDGET_SRC
+    script.async = true
+    script.charset = 'UTF-8'
+    script.crossOrigin = 'anonymous'
+
+    script.onload = () => console.log('[WIDGET] Chat widget loaded')
+    script.onerror = (err) => console.error('[WIDGET] Failed to load', err)
+
+    document.body.appendChild(script)
+  }
+
+  // Your existing auth logs
   console.log('[APP.VUE] Auth state:', {
     token: !!authStore.token,
     user: !!authStore.user,
@@ -34,12 +51,8 @@ onMounted(async () => {
     businessId: authStore.currentBusinessId
   })
 
-  // Initialize WebSocket if authenticated
   if (authStore.isLoggedIn && authStore.user) {
-    console.log('[APP.VUE] User authenticated, initializing WebSocket...')
     wsStore.initialize()
-
-    // ✅ Fetch subscription on app mount
     await subscriptionStore.fetchSubscription()
   }
 })
