@@ -52,11 +52,10 @@
                 <!-- Tab pills — scrollable on mobile -->
                 <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
                     <button v-for="fw in frameworks" :key="fw.id" @click="activeFramework = fw.id"
-                        class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all"
+                        class="shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all"
                         :class="activeFramework === fw.id
                             ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
                             : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-700'">
-                        <span>{{ fw.icon }}</span>
                         {{ fw.label }}
                     </button>
                     <!-- Other -->
@@ -65,7 +64,8 @@
                         :class="activeFramework === 'other'
                             ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
                             : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-700'">
-                        <span>✨</span> Other
+                        <Sparkles class="w-3 h-3" />
+                        Other
                     </button>
                 </div>
 
@@ -205,6 +205,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { Sparkles } from 'lucide-vue-next'
 import CodeBlock from './CodeBlock.vue'
 
 const props = defineProps({
@@ -239,7 +240,6 @@ const frameworks = computed(() => {
         {
             id: 'html',
             label: 'HTML',
-            icon: '🌐',
             language: 'html',
             file: 'index.html (any page)',
             install: `<!DOCTYPE html>
@@ -267,7 +267,6 @@ const frameworks = computed(() => {
         {
             id: 'nextjs-app',
             label: 'Next.js',
-            icon: '▲',
             language: 'javascript',
             file: 'app/layout.tsx',
             install: `// app/layout.tsx
@@ -313,7 +312,6 @@ export function XeliAIIdentify() {
         {
             id: 'react',
             label: 'React',
-            icon: '⚛️',
             language: 'javascript',
             file: 'index.html + App.jsx',
             install: `<!-- public/index.html — paste before </body> -->
@@ -343,7 +341,6 @@ export default function App() {
         {
             id: 'nuxt',
             label: 'Nuxt / Vue',
-            icon: '💚',
             language: 'javascript',
             file: 'plugins/xeliai.client.js',
             install: `// plugins/xeliai.client.js
@@ -377,7 +374,6 @@ watch(() => authStore.user, (user) => {
         {
             id: 'laravel',
             label: 'Laravel',
-            icon: '🔴',
             language: 'html',
             file: 'resources/views/layouts/app.blade.php',
             install: `{{-- resources/views/layouts/app.blade.php --}}
@@ -413,7 +409,6 @@ watch(() => authStore.user, (user) => {
         {
             id: 'wordpress',
             label: 'WordPress',
-            icon: '🔵',
             language: 'php',
             file: 'functions.php (child theme)',
             install: `<?php
@@ -455,7 +450,6 @@ add_action('wp_footer', 'xeliai_identify_user');`,
         {
             id: 'django',
             label: 'Django',
-            icon: '🐍',
             language: 'html',
             file: 'templates/base.html',
             install: `{# templates/base.html #}
@@ -490,7 +484,6 @@ add_action('wp_footer', 'xeliai_identify_user');`,
         {
             id: 'node',
             label: 'Node / Express',
-            icon: '🟩',
             language: 'html',
             file: 'views/layout.ejs (or .hbs)',
             install: `<!-- views/layout.ejs -->
