@@ -1,171 +1,147 @@
 <template>
-    <BaseModal :show="show" @close="handleClose" :closable="!isRunning" max-width="2xl">
+    <!-- Always closable — analysis continues in background via WebSocket -->
+    <BaseModal :show="show" @close="$emit('close')" :closable="true" max-width="2xl">
         <template #header>
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center" :class="headerIconBg">
                     <svg v-if="isRunning" class="animate-spin h-5 w-5 text-blue-600 dark:text-blue-400" fill="none"
                         viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                        </circle>
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                         <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
                     <svg v-else-if="syncStatus.status === 'DONE'" class="w-5 h-5 text-green-600 dark:text-green-400"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
                     <svg v-else-if="syncStatus.status === 'FAILED'" class="w-5 h-5 text-red-600 dark:text-red-400"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <svg v-else class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                        {{ modalTitle }}
-                    </h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                        {{ connection?.name || 'Unknown Connection' }}
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ modalTitle }}</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ connection?.name || 'Unknown Connection' }}
                     </p>
                 </div>
             </div>
         </template>
 
         <template #body>
-            <div class="space-y-6">
-                <!-- Main Progress Bar -->
+            <div class="space-y-5">
+
+                <!-- Progress Bar -->
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {{ syncStatus.message || 'Processing...' }}
+                            {{ progressLabel }}
                         </span>
                         <span class="text-sm font-bold" :class="progressColorClass">
                             {{ syncStatus.progress || 0 }}%
                         </span>
                     </div>
-
                     <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-                        <div class="h-3 rounded-full transition-all duration-300 ease-out" :class="progressBarClass"
-                            :style="{ width: `${syncStatus.progress || 0}%` }"></div>
+                        <div class="h-3 rounded-full transition-all duration-500 ease-out" :class="progressBarClass"
+                            :style="{ width: `${syncStatus.progress || 0}%` }" />
                     </div>
                 </div>
 
-                <!-- Current Table Info -->
-                <div v-if="syncStatus.currentTable" class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-medium text-blue-900 dark:text-blue-100">
-                            Current Table
-                        </span>
-                        <span class="text-xs font-medium text-blue-700 dark:text-blue-300">
-                            {{ syncStatus.processedTables || 0 }} / {{ syncStatus.totalTables || 0 }}
-                        </span>
+                <!-- Analysis Steps — the single source of truth for what's happening -->
+                <div class="border border-gray-100 dark:border-slate-700 rounded-xl p-4">
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
+                        Analysis Steps
+                    </h4>
+                    <div class="space-y-3">
+                        <div v-for="step in analysisSteps" :key="step.key" class="flex items-start gap-3">
+                            <!-- Step indicator -->
+                            <div class="mt-0.5 w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full"
+                                :class="stepIndicatorClass(step)">
+                                <svg v-if="step.done" class="w-3 h-3" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                                <svg v-else-if="step.active" class="animate-spin w-3 h-3" fill="none"
+                                    viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4" />
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                </svg>
+                                <div v-else class="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600" />
+                            </div>
+                            <!-- Step label + sub-detail -->
+                            <div>
+                                <p class="text-sm leading-tight" :class="step.active ? 'text-blue-600 dark:text-blue-400 font-medium' :
+                                    step.done ? 'text-green-700 dark:text-green-400' :
+                                        'text-gray-400 dark:text-gray-500'">
+                                    {{ step.label }}
+                                </p>
+                                <!-- Show current table name only inside the schema step -->
+                                <p v-if="step.active && step.key === 'schema' && syncStatus.currentTable"
+                                    class="text-xs text-blue-500 dark:text-blue-400 mt-0.5 font-mono">
+                                    {{ syncStatus.currentTable }}
+                                    <span class="font-sans ml-1 text-blue-400 dark:text-blue-500">
+                                        ({{ syncStatus.processedTables || 0 }}/{{ syncStatus.totalTables || 0 }})
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <p class="text-base font-mono text-blue-800 dark:text-blue-200">
-                        {{ syncStatus.currentTable }}
-                    </p>
                 </div>
 
-                <!-- Statistics Grid -->
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Tables</div>
-                        <div class="text-2xl font-bold text-gray-900 dark:text-white">
-                            {{ syncStatus.totalTables || 0 }}
-                        </div>
-                    </div>
-
-                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Processed</div>
-                        <div class="text-2xl font-bold text-green-600 dark:text-green-400">
-                            {{ syncStatus.processedTables || 0 }}
-                        </div>
-                    </div>
-
-                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Records</div>
-                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                            {{ (syncStatus.recordsProcessed || 0).toLocaleString() }}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Error Display -->
-                <div v-if="syncStatus.error"
+                <!-- Error -->
+                <div v-if="syncStatus.status === 'FAILED'"
                     class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                    <div class="flex items-start">
-                        <svg class="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 mr-3 flex-shrink-0" fill="none"
-                            stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <div>
-                            <h4 class="text-sm font-medium text-red-900 dark:text-red-100 mb-1">
-                                Sync Failed
-                            </h4>
-                            <p class="text-sm text-red-700 dark:text-red-300">
-                                {{ syncStatus.error }}
-                            </p>
+                            <p class="text-sm font-medium text-red-900 dark:text-red-100">Analysis Failed</p>
+                            <p class="text-sm text-red-700 dark:text-red-300 mt-0.5">{{ syncStatus.error }}</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Success Message -->
+                <!-- Success -->
                 <div v-if="syncStatus.status === 'DONE'"
                     class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                    <div class="flex items-start">
-                        <svg class="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 mr-3 flex-shrink-0" fill="none"
-                            stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <div>
-                            <h4 class="text-sm font-medium text-green-900 dark:text-green-100 mb-1">
-                                Sync Completed Successfully!
-                            </h4>
-                            <p class="text-sm text-green-700 dark:text-green-300">
-                                All data has been synchronized and is now available for your chatbot.
+                            <p class="text-sm font-medium text-green-900 dark:text-green-100">Database Profile Built!
+                            </p>
+                            <p class="text-sm text-green-700 dark:text-green-300 mt-0.5">
+                                Your AI chatbot now understands your database and can answer questions accurately.
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Status Timeline -->
-                <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                        Sync Status
-                    </h4>
-                    <div class="space-y-2">
-                        <div class="flex items-center text-sm">
-                            <div :class="syncStatus.status !== 'IDLE' ? 'bg-green-500' : 'bg-gray-300'"
-                                class="w-2 h-2 rounded-full mr-3"></div>
-                            <span class="text-gray-600 dark:text-gray-400">Started</span>
-                        </div>
-                        <div class="flex items-center text-sm">
-                            <div :class="syncStatus.progress > 0 ? 'bg-green-500' : 'bg-gray-300'"
-                                class="w-2 h-2 rounded-full mr-3"></div>
-                            <span class="text-gray-600 dark:text-gray-400">Processing</span>
-                        </div>
-                        <div class="flex items-center text-sm">
-                            <div :class="syncStatus.status === 'DONE' ? 'bg-green-500' : 'bg-gray-300'"
-                                class="w-2 h-2 rounded-full mr-3"></div>
-                            <span class="text-gray-600 dark:text-gray-400">Completed</span>
-                        </div>
-                    </div>
-                </div>
+                <!-- Running hint -->
+                <p v-if="isRunning" class="text-xs text-center text-gray-400 dark:text-gray-500">
+                    You can close this window — analysis continues in the background.
+                </p>
             </div>
         </template>
 
         <template #footer>
-            <div class="flex items-center justify-end space-x-3">
-                <button v-if="syncStatus.status === 'DONE' || syncStatus.status === 'FAILED'" @click="handleClose"
-                    class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors">
-                    Close
-                </button>
-
-                <button v-if="isRunning" @click="handleCancel"
-                    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
-                    Cancel Sync
+            <div class="flex items-center justify-end">
+                <button @click="$emit('close')"
+                    class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors text-sm">
+                    {{ isRunning ? 'Close (runs in background)' : 'Close' }}
                 </button>
             </div>
         </template>
@@ -176,137 +152,121 @@
 import { computed, watch, onMounted, onUnmounted } from 'vue'
 import { useDatabaseStore } from '~/stores/databaseStore'
 import { useWebSocketStore } from '~/stores/websocketStore'
-import { useAuthStore } from '~/stores/authStore'
 
 const props = defineProps({
-    show: {
-        type: Boolean,
-        required: true
-    },
-    // ✅ Accept full connection object
-    connection: {
-        type: Object,
-        default: null
-    }
+    show: { type: Boolean, required: true },
+    connection: { type: Object, default: null }
 })
-
 const emit = defineEmits(['close', 'sync-complete'])
 
 const databaseStore = useDatabaseStore()
 const websocketStore = useWebSocketStore()
 
-// ✅ Get connection ID (support both _id and id)
-const connectionId = computed(() => {
-    if (!props.connection) return null
-    return props.connection._id || props.connection.id
-})
+const connectionId = computed(() => props.connection?._id || props.connection?.id)
 
-// ✅ Get real-time sync status from store (updated via WebSocket)
 const syncStatus = computed(() => {
     if (!connectionId.value) {
-        return {
-            status: 'IDLE',
-            progress: 0,
-            currentTable: null,
-            message: null,
-            error: null,
-            totalTables: 0,
-            processedTables: 0,
-            recordsProcessed: 0,
-        }
+        return { status: 'IDLE', progress: 0, currentTable: null, message: null, error: null, totalTables: 0, processedTables: 0 }
     }
     return databaseStore.getSyncStatusForConnection(connectionId.value)
 })
 
-const isRunning = computed(() => {
-    return syncStatus.value.status === 'RUNNING' || syncStatus.value.status === 'PENDING'
-})
+const isRunning = computed(() =>
+    ['RUNNING', 'PENDING'].includes(syncStatus.value.status)
+)
 
 const modalTitle = computed(() => {
-    if (syncStatus.value.status === 'DONE') return 'Sync Complete'
-    if (syncStatus.value.status === 'FAILED') return 'Sync Failed'
-    if (isRunning.value) return 'Syncing Database'
-    return 'Database Sync'
+    if (syncStatus.value.status === 'DONE') return 'Profile Built Successfully'
+    if (syncStatus.value.status === 'FAILED') return 'Analysis Failed'
+    if (isRunning.value) return 'Building Database Profile'
+    return 'Database Analysis'
+})
+
+const headerIconBg = computed(() => {
+    if (syncStatus.value.status === 'DONE') return 'bg-green-100 dark:bg-green-900/30'
+    if (syncStatus.value.status === 'FAILED') return 'bg-red-100 dark:bg-red-900/30'
+    return 'bg-blue-100 dark:bg-blue-900/30'
 })
 
 const progressColorClass = computed(() => {
-    if (syncStatus.value.status === 'FAILED') return 'text-red-600 dark:text-red-400'
-    if (syncStatus.value.status === 'DONE') return 'text-green-600 dark:text-green-400'
+    if (syncStatus.value.status === 'FAILED') return 'text-red-600'
+    if (syncStatus.value.status === 'DONE') return 'text-green-600'
     return 'text-blue-600 dark:text-blue-400'
 })
 
 const progressBarClass = computed(() => {
-    if (syncStatus.value.status === 'FAILED') return 'bg-red-600 dark:bg-red-500'
-    if (syncStatus.value.status === 'DONE') return 'bg-green-600 dark:bg-green-500'
-    return 'bg-blue-600 dark:bg-blue-500'
+    if (syncStatus.value.status === 'FAILED') return 'bg-red-500'
+    if (syncStatus.value.status === 'DONE') return 'bg-green-500'
+    return 'bg-blue-600'
 })
 
-// ✅ Watch for sync completion
-watch(() => syncStatus.value.status, (newStatus, oldStatus) => {
-    console.log(`📊 [SyncProgressModal] Status changed: ${oldStatus} → ${newStatus}`)
+// Show message from backend as the progress label — it matches the active step
+const progressLabel = computed(() => {
+    if (!isRunning.value) {
+        return syncStatus.value.status === 'DONE' ? 'Complete' : (syncStatus.value.error ? 'Failed' : 'Ready')
+    }
+    // Strip table name from message — table detail is shown inside the step label
+    const msg = syncStatus.value.message || 'Analyzing...'
+    return msg.replace(/:\s*\S+$/, '').trim() || msg
+})
 
+// Four steps that map to the 0→100% progress range
+const analysisSteps = computed(() => {
+    const pct = syncStatus.value.progress || 0
+    const status = syncStatus.value.status
+
+    return [
+        {
+            key: 'discover',
+            label: 'Discovering all database tables',
+            done: pct > 5,
+            active: pct > 0 && pct <= 5,
+        },
+        {
+            key: 'schema',
+            label: 'Collecting schema & sample data',
+            done: pct > 70,
+            active: pct > 5 && pct <= 70,
+        },
+        {
+            key: 'ai',
+            label: 'Building AI intelligence profile',
+            done: pct > 90,
+            active: pct > 70 && pct <= 90,
+        },
+        {
+            key: 'save',
+            label: 'Saving profile & updating chatbot',
+            done: status === 'DONE',
+            active: pct > 90 && status !== 'DONE',
+        },
+    ]
+})
+
+const stepIndicatorClass = (step) => {
+    if (step.done) return 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+    if (step.active) return 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+    return 'bg-gray-100 dark:bg-gray-800'
+}
+
+watch(() => syncStatus.value.status, (newStatus, oldStatus) => {
     if (oldStatus === 'RUNNING' && newStatus === 'DONE') {
-        console.log('✅ [SyncProgressModal] Sync completed!')
         emit('sync-complete', props.connection)
     }
 })
 
-const handleClose = () => {
-    if (!isRunning.value) {
-        emit('close')
-    }
-}
-
-const handleCancel = async () => {
-    if (!connectionId.value) return
-
-    const config = useRuntimeConfig()
-    const { token } = useAuthStore()
-
-    try {
-        await $fetch(`${config.public.apiBase}/api/sync/${connectionId.value}/cancel`, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}` }
-        })
-
-        console.log('🛑 [SyncProgressModal] Sync cancelled')
-        // WebSocket will handle the status update
-    } catch (error) {
-        console.error('Failed to cancel sync:', error)
-    }
-}
-
-// ✅ Component-specific WebSocket handler
 let unsubscribe = null
-
 onMounted(() => {
-    console.log('📡 [SyncProgressModal] Mounted for connection:', props.connection?.name)
-
     if (connectionId.value) {
-        // Register component-specific handler
-        unsubscribe = websocketStore.on(
-            'sync.progress.updated',
-            (event) => {
-                if (event.connection_id === connectionId.value) {
-                    console.log('📊 [SyncProgressModal] Received sync update:', {
-                        status: event.status,
-                        progress: event.progress,
-                        currentTable: event.current_table
-                    })
-                }
-            },
-            'sync-progress-modal'
-        )
+        unsubscribe = websocketStore.on('sync.progress.updated', (event) => {
+            if (event.connection_id === connectionId.value) {
+                console.log('📊 SyncProgressModal update:', event.status, event.progress + '%', event.current_table || '')
+            }
+        }, 'sync-progress-modal')
     }
 })
-
 onUnmounted(() => {
-    console.log('🔌 [SyncProgressModal] Unmounting, cleaning up handlers')
-
-    // Cleanup component-specific handlers
-    if (unsubscribe) {
-        unsubscribe()
-    }
+    unsubscribe?.()
     websocketStore.offAll('sync-progress-modal')
 })
 </script>
