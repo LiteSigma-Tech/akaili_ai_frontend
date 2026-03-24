@@ -72,9 +72,22 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
         // Contacts
         activeContactsCount: (state) => state.contacts.filter(c => c.status === 'active').length,
 
-        // Templates
+        // Templates — use API-sourced stats when available for accuracy
         myTemplates: (state) => state.templates.filter(t => !t.is_global),
         globalTemplates: (state) => state.templates.filter(t => t.is_global),
+        // FIX: these computed counts now derive from templateStats (API) with local array as fallback
+        totalTemplatesCount: (state) =>
+            state.templateStats.total > 0
+                ? state.templateStats.total
+                : state.templates.length,
+        myTemplatesCount: (state) =>
+            state.templateStats.my_templates > 0
+                ? state.templateStats.my_templates
+                : state.templates.filter(t => !t.is_global).length,
+        globalTemplatesCount: (state) =>
+            state.templateStats.global_templates > 0
+                ? state.templateStats.global_templates
+                : state.templates.filter(t => t.is_global).length,
 
         // Campaigns
         draftCampaigns: (state) => state.campaigns.filter(c => c.status === 'draft'),
@@ -83,6 +96,43 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
     },
 
     actions: {
+        // =====================
+        // HELPERS (private)
+        // =====================
+
+        /**
+         * Normalise a campaign object from the API.
+         * MongoDB returns _id; our frontend always expects `id`.
+         * Also normalises content → html_content so components can use html_content consistently.
+         */
+        _normaliseCampaign(campaign) {
+            if (!campaign) return campaign
+            return {
+                ...campaign,
+                id: campaign.id || campaign._id,
+                // Expose html_content as the canonical field; fall back to content
+                html_content: campaign.html_content || campaign.content || '',
+            }
+        },
+
+        /**
+         * Prepare campaign payload for API calls.
+         * Maps frontend's html_content → backend's content field.
+         * Also sends html_content for backwards-compatibility with fixed controller.
+         */
+        _prepareCampaignPayload(data) {
+            const payload = { ...data }
+            // Send under both keys — controller accepts either
+            if (data.html_content !== undefined) {
+                payload.content = data.html_content
+            }
+            // Stringify unlayer_design if it's an object (backend also accepts strings)
+            if (data.unlayer_design && typeof data.unlayer_design === 'object') {
+                payload.unlayer_design = data.unlayer_design
+            }
+            return payload
+        },
+
         // =====================
         // EMAIL LISTS
         // =====================
@@ -207,14 +257,12 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
                 const config = useRuntimeConfig()
                 const authStore = useAuthStore()
 
-                // Build query params - only include non-empty values
                 const queryObj = {
                     per_page: this.contactsPagination.per_page,
                     page: this.contactsPagination.current_page,
                     ...params
                 }
 
-                // Add filters only if they have values
                 Object.keys(this.filters.contacts).forEach(key => {
                     if (this.filters.contacts[key]) {
                         queryObj[key] = this.filters.contacts[key]
@@ -403,7 +451,10 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
 
                 if (response.success) {
                     this.templates = response.data.templates.data
-                    this.templateStats = response.data.stats
+                    // FIX: always store API-sourced stats so counts are accurate
+                    if (response.data.stats) {
+                        this.templateStats = response.data.stats
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching templates:', error)
@@ -423,8 +474,6 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
                         'Authorization': `Bearer ${authStore.token}`
                     }
                 })
-
-                console.log('Fetch template response:', response)
 
                 if (response.success) {
                     this.currentTemplate = response.data.template
@@ -653,7 +702,8 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
                 })
 
                 if (response.success) {
-                    this.campaigns = response.data.campaigns
+                    // FIX: normalise every campaign to always have `id` (not `_id`)
+                    this.campaigns = response.data.campaigns.map(c => this._normaliseCampaign(c))
                 }
             } catch (error) {
                 console.error('Error fetching campaigns:', error)
@@ -675,8 +725,8 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
                 })
 
                 if (response.success) {
-                    this.currentCampaign = response.data.campaign
-                    return response.data.campaign
+                    this.currentCampaign = this._normaliseCampaign(response.data.campaign)
+                    return this.currentCampaign
                 }
             } catch (error) {
                 console.error('Error fetching campaign:', error)
@@ -693,13 +743,16 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
                     ? `${config.public.apiBase}/api/email/campaigns/auto-save/${campaignId}`
                     : `${config.public.apiBase}/api/email/campaigns/auto-save`
 
+                // FIX: map html_content → content so backend receives the correct field
+                const payload = this._prepareCampaignPayload(campaignData)
+
                 const response = await $fetch(url, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${authStore.token}`,
                         'Content-Type': 'application/json'
                     },
-                    body: campaignData
+                    body: payload
                 })
 
                 if (response.success) {
@@ -724,12 +777,13 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
                         'Authorization': `Bearer ${authStore.token}`,
                         'Content-Type': 'application/json'
                     },
-                    body: campaignData
+                    body: this._prepareCampaignPayload(campaignData)
                 })
 
                 if (response.success) {
-                    this.campaigns.unshift(response.data.campaign)
-                    return response.data.campaign
+                    const campaign = this._normaliseCampaign(response.data.campaign)
+                    this.campaigns.unshift(campaign)
+                    return campaign
                 }
             } catch (error) {
                 console.error('Error creating campaign:', error)
@@ -748,15 +802,17 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
                         'Authorization': `Bearer ${authStore.token}`,
                         'Content-Type': 'application/json'
                     },
-                    body: campaignData
+                    body: this._prepareCampaignPayload(campaignData)
                 })
 
                 if (response.success) {
+                    const campaign = this._normaliseCampaign(response.data.campaign)
+                    // FIX: find by normalised id
                     const index = this.campaigns.findIndex(c => c.id === campaignId)
                     if (index !== -1) {
-                        this.campaigns[index] = response.data.campaign
+                        this.campaigns[index] = campaign
                     }
-                    return response.data.campaign
+                    return campaign
                 }
             } catch (error) {
                 console.error('Error updating campaign:', error)
@@ -815,9 +871,11 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
                 })
 
                 if (response.success) {
+                    // FIX: normalise before updating store — backend returns _id which findIndex misses
+                    const campaign = this._normaliseCampaign(response.data.campaign)
                     const index = this.campaigns.findIndex(c => c.id === campaignId)
                     if (index !== -1) {
-                        this.campaigns[index] = response.data.campaign
+                        this.campaigns[index] = campaign
                     }
                 }
                 return response
@@ -842,9 +900,10 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
                 })
 
                 if (response.success) {
+                    const campaign = this._normaliseCampaign(response.data.campaign)
                     const index = this.campaigns.findIndex(c => c.id === campaignId)
                     if (index !== -1) {
-                        this.campaigns[index] = response.data.campaign
+                        this.campaigns[index] = campaign
                     }
                 }
                 return response
@@ -867,13 +926,63 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
                 })
 
                 if (response.success) {
+                    const campaign = this._normaliseCampaign(response.data.campaign)
                     const index = this.campaigns.findIndex(c => c.id === campaignId)
                     if (index !== -1) {
-                        this.campaigns[index] = response.data.campaign
+                        this.campaigns[index] = campaign
                     }
                 }
             } catch (error) {
                 console.error('Error pausing campaign:', error)
+                throw error
+            }
+        },
+
+        async resumeCampaign(campaignId) {
+            try {
+                const config = useRuntimeConfig()
+                const authStore = useAuthStore()
+
+                const response = await $fetch(`${config.public.apiBase}/api/email/campaigns/${campaignId}/resume`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authStore.token}`
+                    }
+                })
+
+                if (response.success) {
+                    const campaign = this._normaliseCampaign(response.data.campaign)
+                    const index = this.campaigns.findIndex(c => c.id === campaignId)
+                    if (index !== -1) {
+                        this.campaigns[index] = campaign
+                    }
+                }
+                return response
+            } catch (error) {
+                console.error('Error resuming campaign:', error)
+                throw error
+            }
+        },
+
+        async duplicateCampaign(campaignId) {
+            try {
+                const config = useRuntimeConfig()
+                const authStore = useAuthStore()
+
+                const response = await $fetch(`${config.public.apiBase}/api/email/campaigns/${campaignId}/duplicate`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authStore.token}`
+                    }
+                })
+
+                if (response.success) {
+                    const campaign = this._normaliseCampaign(response.data.campaign)
+                    this.campaigns.unshift(campaign)
+                    return campaign
+                }
+            } catch (error) {
+                console.error('Error duplicating campaign:', error)
                 throw error
             }
         },
@@ -922,26 +1031,13 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
 
         clearFilters(type) {
             if (type === 'contacts') {
-                this.filters.contacts = {
-                    status: '',
-                    list_id: '',
-                    tag: '',
-                    search: ''
-                }
+                this.filters.contacts = { status: '', list_id: '', tag: '', search: '' }
                 this.fetchContacts()
             } else if (type === 'templates') {
-                this.filters.templates = {
-                    category: '',
-                    tag: '',
-                    search: '',
-                    ownership: 'all'
-                }
+                this.filters.templates = { category: '', tag: '', search: '', ownership: 'all' }
                 this.fetchTemplates()
             } else if (type === 'campaigns') {
-                this.filters.campaigns = {
-                    status: '',
-                    search: ''
-                }
+                this.filters.campaigns = { status: '', search: '' }
                 this.fetchCampaigns()
             }
         },
@@ -950,6 +1046,7 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
         // WEBSOCKET HANDLERS
         // =====================
         handleEmailStatsUpdate(data) {
+            // FIX: data.name is now included in the broadcast payload (EmailStatsUpdated.php)
             const campaign = this.campaigns.find(c => c.id === data.campaign_id)
             if (campaign) {
                 campaign.stats = campaign.stats || {}
@@ -960,6 +1057,7 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
             }
 
             if (this.currentCampaign?.id === data.campaign_id) {
+                this.currentCampaign.stats = this.currentCampaign.stats || {}
                 this.currentCampaign.stats.opened = data.opened
                 this.currentCampaign.stats.clicked = data.clicked
                 this.currentCampaign.open_rate = data.open_rate

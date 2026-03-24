@@ -8,7 +8,7 @@
                 <input v-model="emailStore.filters.templates.search" @input="debouncedSearch" type="text"
                     placeholder="Search templates..."
                     class="w-full sm:w-64 px-4 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors" />
-                
+
                 <select v-model="emailStore.filters.templates.category" @change="emailStore.fetchTemplates()"
                     class="w-full sm:w-40 px-4 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors">
                     <option value="">All Categories</option>
@@ -16,7 +16,7 @@
                         {{ cat }}
                     </option>
                 </select>
-                
+
                 <select v-model="emailStore.filters.templates.ownership" @change="emailStore.fetchTemplates()"
                     class="w-full sm:w-40 px-4 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors">
                     <option value="all">All Templates</option>
@@ -36,18 +36,22 @@
         </div>
 
         <!-- Stats -->
+        <!-- FIX: use store getters which prefer API-sourced templateStats over local array counts -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 transition-colors">
+            <div
+                class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 transition-colors">
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Templates</p>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalTemplatesCount }}</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ emailStore.totalTemplatesCount }}</p>
             </div>
-            <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 transition-colors">
+            <div
+                class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 transition-colors">
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">My Templates</p>
-                <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ myTemplatesCount }}</p>
+                <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ emailStore.myTemplatesCount }}</p>
             </div>
-            <div class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 transition-colors">
+            <div
+                class="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 p-4 transition-colors">
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Global Templates</p>
-                <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ globalTemplatesCount }}</p>
+                <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ emailStore.globalTemplatesCount }}</p>
             </div>
         </div>
 
@@ -58,15 +62,18 @@
 
         <!-- Empty State -->
         <div v-else-if="emailStore.templates.length === 0" class="text-center py-12">
-            <div class="bg-purple-50 dark:bg-purple-900/20 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                <svg class="w-10 h-10 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div
+                class="bg-purple-50 dark:bg-purple-900/20 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-10 h-10 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
             </div>
             <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No templates yet</h3>
             <p class="text-gray-600 dark:text-gray-400 mb-4">Create your first email template</p>
-            <button @click="createTemplate" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+            <button @click="createTemplate"
+                class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
                 Create Template
             </button>
         </div>
@@ -75,9 +82,10 @@
         <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             <div v-for="template in emailStore.templates" :key="template.id"
                 class="border border-gray-200 dark:border-slate-800 rounded-xl overflow-hidden hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-lg transition-all group bg-white dark:bg-slate-900">
-                
+
                 <!-- Thumbnail -->
-                <div class="aspect-video bg-gradient-to-br from-purple-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 relative overflow-hidden">
+                <div
+                    class="aspect-video bg-gradient-to-br from-purple-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 relative overflow-hidden">
                     <img v-if="template.thumbnail" :src="template.thumbnail" :alt="template.name"
                         class="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         @error="handleImageError" />
@@ -87,8 +95,8 @@
                         style="width: 200%; height: 200%;" sandbox=""></iframe>
 
                     <div v-else class="w-full h-full flex flex-col items-center justify-center">
-                        <svg class="w-16 h-16 text-purple-300 dark:text-purple-900/50 mb-2" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
+                        <svg class="w-16 h-16 text-purple-300 dark:text-purple-900/50 mb-2" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
@@ -97,7 +105,8 @@
 
                     <!-- Badges -->
                     <div class="absolute top-2 right-2 flex flex-col gap-1">
-                        <span v-if="template.is_global" class="px-2 py-1 bg-blue-500 text-white text-xs rounded shadow-sm">
+                        <span v-if="template.is_global"
+                            class="px-2 py-1 bg-blue-500 text-white text-xs rounded shadow-sm">
                             Global
                         </span>
                         <span v-else class="px-2 py-1 bg-purple-500 text-white text-xs rounded shadow-sm">
@@ -118,7 +127,8 @@
                     </p>
 
                     <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-3">
-                        <span v-if="template.category" class="px-2 py-0.5 bg-gray-100 dark:bg-slate-800 rounded">{{ template.category }}</span>
+                        <span v-if="template.category" class="px-2 py-0.5 bg-gray-100 dark:bg-slate-800 rounded">{{
+                            template.category }}</span>
                         <span v-if="template.usage_count">{{ template.usage_count }} uses</span>
                     </div>
 
@@ -172,43 +182,50 @@
             </div>
         </div>
 
-        <!-- Modals (Unchanged) -->
+        <!-- Modals -->
         <TemplateEditorFullscreen v-if="showEditorModal" :template="selectedTemplate" @close="closeEditor"
             @saved="handleTemplateSaved" />
         <EmailPreviewModal v-if="showPreviewModal" :html-content="previewHtml" :subject="previewSubject"
             @close="closePreview" />
-        
-        <!-- Duplicate Modal (Included for completeness) -->
-        <div v-if="showDuplicateModal"
-            class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div class="bg-white dark:bg-slate-900 rounded-lg w-full max-w-md p-6 shadow-xl border border-gray-200 dark:border-slate-800">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Duplicate Template</h3>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Template Name</label>
-                    <input v-model="duplicateName" type="text" placeholder="Enter template name..."
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
-                        @keyup.enter="confirmDuplicate" />
-                </div>
-                <div class="flex items-center justify-end gap-3">
-                    <button @click="showDuplicateModal = false" class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                        Cancel
-                    </button>
-                    <button @click="confirmDuplicate" :disabled="!duplicateName || duplicating" :class="[
-                        'px-4 py-2 rounded-lg transition-colors',
-                        duplicateName && !duplicating
-                            ? 'bg-purple-600 text-white hover:bg-purple-700'
-                            : 'bg-gray-300 dark:bg-slate-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                    ]">
-                        {{ duplicating ? 'Duplicating...' : 'Duplicate' }}
-                    </button>
+
+        <!-- Duplicate Modal -->
+        <Teleport to="body">
+            <div v-if="showDuplicateModal"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+                <div class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-slate-900">
+                    <div class="p-6">
+                        <h3 class="mb-1 text-lg font-bold text-gray-900 dark:text-white">Duplicate Template</h3>
+                        <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">Give the new copy a name.</p>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Template Name
+                        </label>
+                        <input v-model="duplicateName" type="text" placeholder="Enter template name..."
+                            class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                            @keyup.enter="confirmDuplicate" />
+                    </div>
+                    <div
+                        class="flex items-center justify-end gap-3 border-t border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
+                        <button @click="showDuplicateModal = false"
+                            class="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:border-slate-700 dark:text-gray-300 dark:hover:bg-slate-800">
+                            Cancel
+                        </button>
+                        <button @click="confirmDuplicate" :disabled="!duplicateName || duplicating" :class="[
+                            'rounded-lg px-4 py-2 text-sm font-semibold transition-colors',
+                            duplicateName && !duplicating
+                                ? 'bg-purple-600 text-white hover:bg-purple-700'
+                                : 'cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-slate-700 dark:text-slate-500'
+                        ]">
+                            {{ duplicating ? 'Duplicating…' : 'Duplicate' }}
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </Teleport>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, reactive } from 'vue'
 import { debounce } from 'lodash-es'
 import TemplateEditorFullscreen from './TemplateEditorFullscreen.vue'
 import EmailPreviewModal from './EmailPreviewModal.vue'
@@ -228,28 +245,23 @@ const templateToDuplicate = ref(null)
 const actionLoading = reactive({})
 const duplicating = ref(false)
 
-const totalTemplatesCount = computed(() => emailStore.templates.length)
-const myTemplatesCount = computed(() => emailStore.templates.filter(t => !t.is_global).length)
-const globalTemplatesCount = computed(() => emailStore.templates.filter(t => t.is_global).length)
+// Stats now come from store getters (emailStore.totalTemplatesCount, etc.)
+// which prefer API-sourced templateStats — no local computed needed.
 
 const debouncedSearch = debounce(() => {
     emailStore.fetchTemplates()
 }, 500)
 
-const getPreviewHTML = (template) => {
-    return `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                body { margin: 0; padding: 10px; transform-origin: top left; background: white; }
-            </style>
-        </head>
-        <body>${template.html_content}</body>
-        </html>
-    `
-}
+const getPreviewHTML = (template) => `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>body { margin: 0; padding: 10px; transform-origin: top left; background: white; }</style>
+    </head>
+    <body>${template.html_content}</body>
+    </html>
+`
 
 const handleImageError = (event) => {
     event.target.style.display = 'none'
@@ -283,7 +295,7 @@ const previewTemplate = async (template) => {
         previewHtml.value = data.html_content
         previewSubject.value = data.subject
         showPreviewModal.value = true
-    } catch (error) {
+    } catch {
         $toast.error('Failed to load preview')
     } finally {
         actionLoading[template.id] = false
@@ -304,7 +316,6 @@ const duplicateTemplate = (template) => {
 
 const confirmDuplicate = async () => {
     if (!duplicateName.value) return
-
     duplicating.value = true
     try {
         await emailStore.duplicateTemplate(templateToDuplicate.value.id, duplicateName.value)
@@ -312,7 +323,7 @@ const confirmDuplicate = async () => {
         showDuplicateModal.value = false
         duplicateName.value = ''
         templateToDuplicate.value = null
-    } catch (error) {
+    } catch {
         $toast.error('Failed to duplicate template')
     } finally {
         duplicating.value = false
@@ -320,10 +331,6 @@ const confirmDuplicate = async () => {
 }
 
 const deleteTemplate = async (template) => {
-    if (!confirm(`Delete "${template.name}"? This cannot be undone.`)) {
-        return
-    }
-
     actionLoading[template.id] = true
     try {
         await emailStore.deleteTemplate(template.id)
