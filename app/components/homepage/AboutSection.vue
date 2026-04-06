@@ -196,27 +196,27 @@ const team = [
   {
     name: "Emmanuel Obute",
     role: "Founder & CEO",
-    image: "/images/Mr-Emmanuel.JPG",
+    image: "/images/mrEmmanuel.jpg",
   },
   {
     name: "Agboifoh Oseahumen",
     role: "Head of Engineering",
-    image: "/images/Ose.JPG",
+    image: "/images/ose.jpg",
   },
   {
     name: " Adu Daniel ",
     role: "Frontend developer",
-    image: "/images/Daniel.JPG",
+    image: "/images/daniel.jpg",
   },
   {
     name: "Faith Stanley-Mike",
     role: "Social Media Manager",
-    image: "/images/Mrs-Faith.JPG",
+    image: "/images/mrsFaith.jpg",
   },
   {
     name: "Joseph Ochefu Sunday",
     role: "Frontend developer",
-    image: "/images/Joseph.JPG",
+    image: "/images/joseph.jpg",
   },
 ];
 </script>
