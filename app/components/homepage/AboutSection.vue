@@ -138,7 +138,9 @@
         <h3 class="text-3xl font-bold text-slate-900 dark:text-white mb-12">
           Meet the Builders
         </h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 items-stretch gap-8"
+        >
           <div
             v-for="(member, index) in team"
             :key="index"
@@ -147,12 +149,12 @@
             class="group"
           >
             <div
-              class="relative overflow-hidden rounded-2xl mb-4 aspect-square bg-gray-100 dark:bg-slate-800"
+              class="relative overflow-hidden rounded-2xl mb-4 max-w-96 aspect-square bg-gray-100 dark:bg-slate-800"
             >
               <img
                 :src="member.image"
                 :alt="member.name"
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                class="w-full h-auto transition-transform duration-500 group-hover:scale-110"
               />
             </div>
             <h4 class="text-lg font-bold text-slate-900 dark:text-white">
@@ -200,19 +202,21 @@ const team = [
   },
   {
     name: "Agboifoh Oseahumen",
-    role: "Head of Engineering",
+    role: "Lead Software Engineer",
     image: "/images/ose.jpg",
   },
+  {
+    name: "Faith Stanley-Mike",
+    role: "Business Dev/HR Manager",
+    image: "/images/mrsFaith.jpg",
+  },
+
   {
     name: " Adu Daniel ",
     role: "Frontend developer",
     image: "/images/daniel.jpg",
   },
-  {
-    name: "Faith Stanley-Mike",
-    role: "Social Media Manager",
-    image: "/images/mrsFaith.jpg",
-  },
+
   {
     name: "Joseph Ochefu Sunday",
     role: "Frontend developer",
