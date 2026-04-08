@@ -416,9 +416,13 @@ const formatMessage = (text) => {
 }
 
 const sanitizeHtml = (html) => {
-    const temp = document.createElement('div')
-    temp.textContent = html
-    return temp.innerHTML
+    // Allow our own formatted HTML through but strip dangerous tags/attributes
+    return html
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+        .replace(/on\w+="[^"]*"/gi, '')
+        .replace(/on\w+='[^']*'/gi, '')
+        .replace(/javascript:/gi, '')
 }
 
 const generateSessionId = () => 'chat_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11)

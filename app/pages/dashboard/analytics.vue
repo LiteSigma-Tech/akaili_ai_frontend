@@ -105,7 +105,7 @@
                         </div>
                         <p class="text-xl md:text-2xl font-bold text-[#9E4CFF]">{{
                             analyticsStore.kpis?.total_conversations ?? '—'
-                            }}</p>
+                        }}</p>
                     </div>
 
                     <div v-if="analyticsStore.loading"
@@ -127,7 +127,7 @@
                                 <div class="absolute inset-0 bg-gradient-to-t from-[#9E4CFF] to-purple-400"></div>
                             </div>
                             <span class="text-[10px] md:text-xs font-medium text-gray-400 mt-2 text-center">{{ day.label
-                                }}</span>
+                            }}</span>
                         </div>
                     </div>
                 </div>
@@ -147,7 +147,7 @@
                             <div class="flex justify-between items-end mb-1.5">
                                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300 truncate pr-4">{{
                                     src.label
-                                    }}</span>
+                                }}</span>
                                 <span class="text-sm font-bold text-gray-900 dark:text-white">{{ src.value }}</span>
                             </div>
                             <div class="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
@@ -166,7 +166,7 @@
                                 <div class="flex justify-between text-xs mb-1">
                                     <span class="text-gray-600 dark:text-gray-300 truncate pr-2">{{ bot.name }}</span>
                                     <span class="font-bold text-gray-900 dark:text-white shrink-0">{{ bot.percent
-                                        }}%</span>
+                                    }}%</span>
                                 </div>
                                 <div class="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-1.5">
                                     <div class="h-full rounded-full bg-[#9E4CFF] transition-all duration-700"
@@ -233,13 +233,13 @@
                                     <div
                                         class="font-semibold text-gray-900 dark:text-white text-sm truncate max-w-[120px]">
                                         {{
-                                        session.user }}</div>
+                                            session.user }}</div>
                                     <div class="text-[10px] text-gray-400 uppercase">{{ session.source }}</div>
                                 </td>
                                 <td
                                     class="px-4 md:px-6 py-4 text-sm text-gray-600 dark:text-gray-300 truncate max-w-[120px]">
                                     {{
-                                    session.chatbot_name }}</td>
+                                        session.chatbot_name }}</td>
                                 <td class="px-4 md:px-6 py-4">
                                     <span
                                         class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] md:text-xs font-bold border"
@@ -259,13 +259,147 @@
                                 <td
                                     class="px-4 md:px-6 py-4 text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">
                                     {{
-                                    session.messages }}</td>
+                                        session.messages }}</td>
                                 <td
                                     class="px-4 md:px-6 py-4 text-right text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                     {{ formatRelative(session.last_activity) }}</td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── B4: Most Asked Questions + B5: A/B Comparison ── -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 md:mt-10">
+
+            <!-- B4 — Top Questions -->
+            <div
+                class="bg-white dark:bg-slate-900 rounded-2xl p-5 md:p-8 border border-gray-100 dark:border-slate-800 shadow-sm">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-base md:text-lg font-bold text-gray-900 dark:text-white">Most Asked Questions
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Real topics from conversation history
+                        </p>
+                    </div>
+                    <div class="p-2 rounded-xl bg-purple-50 dark:bg-purple-900/20">
+                        <MessageSquare class="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div v-if="analyticsStore.topQuestionsLoading" class="space-y-3">
+                    <div v-for="i in 6" :key="i" class="h-8 bg-gray-100 dark:bg-slate-800 rounded-lg animate-pulse">
+                    </div>
+                </div>
+
+                <!-- Empty -->
+                <div v-else-if="!analyticsStore.topQuestions.length"
+                    class="flex flex-col items-center justify-center py-10 text-center">
+                    <div class="text-3xl mb-2">💬</div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">No conversation data yet</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Questions will appear as visitors chat with
+                        your
+                        bot</p>
+                </div>
+
+                <!-- List -->
+                <div v-else class="space-y-2">
+                    <div v-for="(q, i) in analyticsStore.topQuestions" :key="i"
+                        class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-slate-800 hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors group">
+                        <span
+                            class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black"
+                            :class="i === 0 ? 'bg-purple-600 text-white' : i === 1 ? 'bg-purple-400 text-white' : i === 2 ? 'bg-purple-200 text-purple-800 dark:bg-purple-900 dark:text-purple-300' : 'bg-gray-200 text-gray-600 dark:bg-slate-700 dark:text-gray-400'">
+                            {{ i + 1 }}
+                        </span>
+                        <span class="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate capitalize">{{ q.topic
+                            }}</span>
+                        <span
+                            class="flex-shrink-0 text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 px-2 py-0.5 rounded-full">
+                            {{ q.count }}×
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- B5 — A/B Variant Comparison -->
+            <div
+                class="bg-white dark:bg-slate-900 rounded-2xl p-5 md:p-8 border border-gray-100 dark:border-slate-800 shadow-sm">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-base md:text-lg font-bold text-gray-900 dark:text-white">A/B Test Comparison
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Widget conversation split by chatbot
+                            variant
+                        </p>
+                    </div>
+                    <div class="p-2 rounded-xl bg-green-50 dark:bg-green-900/20">
+                        <TrendingUp class="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div v-if="analyticsStore.abLoading" class="space-y-4">
+                    <div v-for="i in 2" :key="i" class="h-24 bg-gray-100 dark:bg-slate-800 rounded-xl animate-pulse">
+                    </div>
+                </div>
+
+                <!-- No A/B data -->
+                <div v-else-if="!analyticsStore.hasAbData"
+                    class="flex flex-col items-center justify-center py-10 text-center">
+                    <div class="text-3xl mb-2">🧪</div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">No A/B test running</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Enable A/B testing on a chatbot in its
+                        settings to
+                        compare variants</p>
+                </div>
+
+                <!-- Comparison cards -->
+                <div v-else class="space-y-4">
+                    <div v-for="variant in analyticsStore.abComparison" :key="variant.variant"
+                        class="p-4 rounded-xl border-2 transition-colors" :class="variant.variant === 'A'
+                            ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/10'
+                            : 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/10'">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg font-black"
+                                    :class="variant.variant === 'A' ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'">
+                                    Variant {{ variant.variant }}
+                                </span>
+                                <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                    {{ variant.conversations }} conversations
+                                </span>
+                            </div>
+                            <!-- Winner badge -->
+                            <span v-if="isAbWinner(variant.variant)"
+                                class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                                🏆 Leading
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="text-center">
+                                <div class="text-lg font-extrabold text-gray-900 dark:text-white">{{
+                                    variant.resolution_rate }}%
+                                </div>
+                                <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Resolution</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-extrabold text-gray-900 dark:text-white">{{
+                                    variant.avg_messages }}
+                                </div>
+                                <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Avg Messages</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-extrabold"
+                                    :class="variant.avg_rating ? 'text-yellow-500' : 'text-gray-400 dark:text-slate-600'">
+                                    {{ variant.avg_rating ? variant.avg_rating + '★' : '—' }}
+                                </div>
+                                <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Avg Rating</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -282,6 +416,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { MessageSquare, Star, Users, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-vue-next'
 import FullReportModal from '~/components/analytics/FullReportModal.vue'
+import { useAnalyticsStore } from '~/stores/analyticsStore'
 
 definePageMeta({ layout: 'dashboard' })
 
@@ -346,12 +481,24 @@ const sourcePercent = (val) => {
 
 const changeRange = async (range) => {
     selectedRange.value = range
-    await analyticsStore.fetchAnalytics(range)
+    await Promise.all([
+        analyticsStore.fetchAnalytics(range),
+        analyticsStore.fetchTopQuestions(range),
+        analyticsStore.fetchAbComparison(range),
+    ])
 }
 
 const openFullReport = async () => {
     showFullReport.value = true
     await analyticsStore.fetchReport(selectedRange.value)
+}
+
+// B5: determine which variant is performing better (by resolution rate)
+const isAbWinner = (variant) => {
+    const data = analyticsStore.abComparison
+    if (data.length < 2) return false
+    const sorted = [...data].sort((a, b) => b.resolution_rate - a.resolution_rate)
+    return sorted[0]?.variant === variant && sorted[0]?.conversations > 5
 }
 
 const formatRelative = (date) => {
@@ -383,5 +530,9 @@ const statusDot = {
     'Empty': 'bg-gray-300',
 }
 
-onMounted(() => analyticsStore.fetchAnalytics(selectedRange.value))
+onMounted(() => {
+    analyticsStore.fetchAnalytics(selectedRange.value)
+    analyticsStore.fetchTopQuestions(selectedRange.value)
+    analyticsStore.fetchAbComparison(selectedRange.value)
+})
 </script>
