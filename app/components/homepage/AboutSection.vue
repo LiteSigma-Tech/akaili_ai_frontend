@@ -134,26 +134,16 @@
       </div>
 
       <!-- 4. TEAM SECTION -->
-      <div class="text-center">
+     <div class="text-center">
         <h3 class="text-3xl font-bold text-slate-900 dark:text-white mb-12">
           Meet the Builders
         </h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div
-            v-for="(member, index) in team"
-            :key="index"
-            data-aos="zoom-in"
-            :data-aos-delay="index * 100"
-            class="group"
-          >
-            <div
-              class="relative overflow-hidden rounded-2xl mb-4 aspect-square bg-gray-100 dark:bg-slate-800"
-            >
-              <img
-                :src="member.image"
-                :alt="member.name"
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 items-stretch gap-8">
+          <div v-for="(member, index) in team" :key="index" data-aos="zoom-in" :data-aos-delay="index * 100"
+            class="group">
+            <div class="relative overflow-hidden rounded-2xl mb-4 max-w-96 aspect-square bg-gray-100 dark:bg-slate-800">
+              <img :src="member.image" :alt="member.name"
+                class="w-full h-auto transition-transform duration-500 group-hover:scale-110" />
             </div>
             <h4 class="text-lg font-bold text-slate-900 dark:text-white">
               {{ member.name }}
