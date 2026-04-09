@@ -239,8 +239,17 @@
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Industry</label>
-                                    <input v-model="businessForm.industry" type="text" required
-                                        class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-colors" />
+                                    <!-- Item 8: Replaced free-text input with dropdown. Legacy custom values shown gracefully. -->
+                                    <select v-model="businessForm.industry" required
+                                        class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-colors">
+                                        <option value="">Select Industry</option>
+                                        <option v-for="ind in industries" :key="ind.value" :value="ind.value">{{ ind.label }}</option>
+                                        <!-- Gracefully render legacy free-text values that don't match any option -->
+                                        <option
+                                            v-if="businessForm.industry && !industries.find(i => i.value === businessForm.industry)"
+                                            :value="businessForm.industry"
+                                        >{{ businessForm.industry }} (custom)</option>
+                                    </select>
                                 </div>
 
                                 <div>
@@ -473,6 +482,7 @@ definePageMeta({
     layout: 'dashboard'
 })
 
+const { industries } = useIndustryOptions()
 const route = useRoute()
 const authStore = useAuthStore()
 const userStore = useUserStore()

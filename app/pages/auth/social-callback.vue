@@ -16,47 +16,41 @@ definePageMeta({
 
 const route = useRoute()
 const authStore = useAuthStore()
+const config = useRuntimeConfig()
 const statusMessage = ref('Processing authentication...')
 
 onMounted(async () => {
   try {
     const token = route.query.token
-    const userParam = route.query.user
     const verified = route.query.verified === 'true'
 
-    if (!token || !userParam) {
+    if (!token) {
       statusMessage.value = 'Invalid authentication data'
-
-      if (window.opener) {
-        window.opener.postMessage({
-          type: 'social-auth-error',
-          message: 'Invalid authentication data'
-        }, window.location.origin)
-        window.close()
-      } else {
-        setTimeout(() => {
-          navigateTo('/login?error=' + encodeURIComponent('Invalid authentication data'))
-        }, 2000)
-      }
+      handleFailure('Invalid authentication data')
       return
     }
 
-    // Parse user data
-    let user
-    try {
-      user = JSON.parse(decodeURIComponent(userParam))
-    } catch (parseError) {
-      console.error('Failed to parse user data:', parseError)
-      throw new Error('Invalid user data format')
+    // Item 4: Store the token first, then fetch user data from the API.
+    // Previously the user object was passed as a URL query parameter (?user=...),
+    // which exposed name, email, and plan info in browser history, server logs,
+    // and any analytics tool that captures page URLs.
+    statusMessage.value = 'Verifying your account...'
+
+    // Store token in cookie so the follow-up API call is authenticated
+    authStore.setTokenCookie(token)
+
+    // Fetch user data from the authenticated endpoint — never from the URL
+    const userData = await $fetch(`${config.public.apiBase}/api/profile`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+
+    if (!userData?.data?.user) {
+      throw new Error('Could not retrieve account details')
     }
 
-    if (!user || !user.id || !user.email) {
-      throw new Error('Incomplete user data')
-    }
+    const user = userData.data.user
 
     statusMessage.value = 'Setting up your account...'
-
-    // Set auth in store
     authStore.setAuth(token, user)
 
     if (!authStore.isLoggedIn || !authStore.user) {
@@ -74,29 +68,21 @@ onMounted(async () => {
         verified: verified
       }, window.location.origin)
 
-      setTimeout(() => {
-        window.close()
-      }, 500)
+      setTimeout(() => { window.close() }, 500)
     } else {
-      // UPDATED: If not in popup, check localStorage for plan
       await nextTick()
-
       const pendingPlan = localStorage.getItem('pendingPlan')
 
       if (pendingPlan) {
         if (!user.onboarding_completed) {
-          // Keep in localStorage for after onboarding
           navigateTo('/dashboard/onboarding')
         } else if (!user.current_business_id) {
-          // Keep in localStorage for after business selection
           navigateTo('/select-business')
         } else {
-          // Clear and go to checkout
           localStorage.removeItem('pendingPlan')
           navigateTo({ path: '/checkout', query: { plan: pendingPlan } })
         }
       } else {
-        // Normal flow without pending plan
         if (!user.onboarding_completed) {
           navigateTo('/dashboard/onboarding')
         } else if (!user.current_business_id) {
@@ -109,21 +95,18 @@ onMounted(async () => {
   } catch (error) {
     console.error('Social auth callback error:', error)
     statusMessage.value = 'Authentication failed'
-
-    if (window.opener) {
-      window.opener.postMessage({
-        type: 'social-auth-error',
-        message: error.message || 'Authentication failed'
-      }, window.location.origin)
-
-      setTimeout(() => {
-        window.close()
-      }, 2000)
-    } else {
-      setTimeout(() => {
-        navigateTo('/login?error=' + encodeURIComponent(error.message || 'Authentication failed'))
-      }, 2000)
-    }
+    handleFailure(error.message || 'Authentication failed')
   }
 })
+
+function handleFailure(message) {
+  if (window.opener) {
+    window.opener.postMessage({ type: 'social-auth-error', message }, window.location.origin)
+    setTimeout(() => { window.close() }, 2000)
+  } else {
+    setTimeout(() => {
+      navigateTo('/login?error=' + encodeURIComponent(message))
+    }, 2000)
+  }
+}
 </script>
