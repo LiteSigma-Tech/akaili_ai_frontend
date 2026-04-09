@@ -201,12 +201,12 @@ const team = [
   {
     name: "Agboifoh Oseahumen",
     role: "Head of Engineering",
-    image: "/images/Ose.jpg",
+    image: "/images/Ose.JPG",
   },
   {
     name: " Adu Daniel ",
     role: "Frontend developer",
-    image: "/images/Daniel.jpg",
+    image: "/images/Daniel.JPG",
   },
   {
     name: "Faith Stanley-Mike",
