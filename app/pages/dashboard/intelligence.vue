@@ -33,12 +33,34 @@
                         <span class="h-2 w-2 rounded-full"
                             :class="selectedChatbot.is_active ? 'bg-green-500' : 'bg-yellow-400'"></span>
                         <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ selectedChatbot.name
-                            }}</span>
+                        }}</span>
                     </div>
                     <div class="h-4 w-px bg-gray-200 dark:bg-slate-700"></div>
                     <span class="text-xs font-medium text-purple-600 dark:text-purple-400">
                         {{ connectedDatabases }} source{{ connectedDatabases !== 1 ? 's' : '' }}
                     </span>
+                </div>
+
+                <!-- Point 5A/5B quick-access buttons -->
+                <div class="flex items-center gap-2 ml-2">
+                    <button @click="showInsightsPanel = !showInsightsPanel"
+                        class="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-colors border"
+                        :class="showInsightsPanel
+                            ? 'bg-purple-600 text-white border-purple-600'
+                            : 'bg-white text-gray-700 border-gray-200 hover:border-purple-300 dark:bg-slate-900 dark:text-gray-300 dark:border-slate-700'">
+                        <span>📊</span> Insights
+                        <span v-if="intelligenceStore.okInsights.length"
+                            class="ml-0.5 bg-white/20 text-white rounded-full px-1.5 py-0.5 text-[10px] font-black">
+                            {{ intelligenceStore.okInsights.length }}
+                        </span>
+                    </button>
+                    <button @click="showReportsPanel = !showReportsPanel"
+                        class="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-colors border"
+                        :class="showReportsPanel
+                            ? 'bg-purple-600 text-white border-purple-600'
+                            : 'bg-white text-gray-700 border-gray-200 hover:border-purple-300 dark:bg-slate-900 dark:text-gray-300 dark:border-slate-700'">
+                        <span>📁</span> Reports
+                    </button>
                 </div>
             </div>
         </div>
@@ -207,8 +229,8 @@
                 <div class="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-800 no-scrollbar">
                     <button v-for="session in sessionHistory" :key="session.session_id"
                         class="w-full px-4 py-3 text-left transition-colors" :class="activeSessionId === session.session_id
-                                ? 'border-r-2 border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                                : 'hover:bg-gray-50 dark:hover:bg-slate-800/50'
+                            ? 'border-r-2 border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                            : 'hover:bg-gray-50 dark:hover:bg-slate-800/50'
                             " @click="restoreSession(session)">
                         <p
                             class="mb-0.5 truncate text-xs font-semibold leading-tight text-slate-900 dark:text-slate-100">
@@ -261,8 +283,8 @@
                         <div class="space-y-2">
                             <button v-for="bot in availableChatbots" :key="bot.id"
                                 class="w-full rounded-2xl border-2 px-5 py-4 text-left transition-all" :class="selectedChatbotId === bot.id
-                                        ? 'border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300'
-                                        : 'border-slate-100 dark:border-slate-800 dark:text-white'
+                                    ? 'border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300'
+                                    : 'border-slate-100 dark:border-slate-800 dark:text-white'
                                     " @click="selectedChatbotId = bot.id; resetChat(); mobilePanel = null">
                                 <div class="flex items-center justify-between">
                                     <span class="font-bold">{{ bot.name }}</span>
@@ -322,18 +344,269 @@
                 </div>
             </Transition>
         </Teleport>
+
+        <!-- ══════════════════════════════════════
+             Point 5A — Insight Cards Slide-over Panel
+        ══════════════════════════════════════ -->
+        <Teleport to="body">
+            <Transition name="sheet">
+                <div v-if="showInsightsPanel" class="fixed inset-0 z-50 flex items-end md:items-start md:justify-end"
+                    @click.self="showInsightsPanel = false">
+                    <div
+                        class="w-full md:w-[480px] md:h-full md:max-h-screen bg-white dark:bg-slate-900 rounded-t-3xl md:rounded-none md:rounded-l-3xl shadow-2xl flex flex-col max-h-[85vh] md:max-h-screen overflow-hidden border-l border-gray-200 dark:border-slate-700">
+
+                        <!-- Header -->
+                        <div
+                            class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800 shrink-0">
+                            <div>
+                                <h2 class="text-base font-bold text-gray-900 dark:text-white">Business Insights</h2>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    <span v-if="intelligenceStore.insightsGeneratedAt">
+                                        Updated {{ formatRelative(intelligenceStore.insightsGeneratedAt) }}
+                                    </span>
+                                    <span v-else>Auto-generated from your database</span>
+                                    <span v-if="intelligenceStore.insightsStale" class="ml-1 text-orange-500">·
+                                        Refreshing…</span>
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button @click="handleInsightRefresh" :disabled="insightRefreshing"
+                                    class="p-2 rounded-xl text-gray-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors disabled:opacity-40">
+                                    <svg class="w-4 h-4" :class="insightRefreshing ? 'animate-spin' : ''" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                </button>
+                                <button @click="showInsightsPanel = false"
+                                    class="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Insights list -->
+                        <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+
+                            <!-- Loading -->
+                            <div v-if="intelligenceStore.insightsLoading" class="space-y-3">
+                                <div v-for="i in 4" :key="i"
+                                    class="h-28 bg-gray-100 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
+                            </div>
+
+                            <!-- No database connected -->
+                            <div v-else-if="connectedDatabases === 0"
+                                class="flex flex-col items-center justify-center py-16 text-center px-6">
+                                <div class="text-4xl mb-3">🔌</div>
+                                <p class="font-semibold text-gray-700 dark:text-gray-300">No database connected</p>
+                                <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Connect a database to unlock
+                                    proactive business insights</p>
+                            </div>
+
+                            <!-- Empty -->
+                            <div v-else-if="!intelligenceStore.insights.length"
+                                class="flex flex-col items-center justify-center py-16 text-center px-6">
+                                <div class="text-4xl mb-3">📊</div>
+                                <p class="font-semibold text-gray-700 dark:text-gray-300">Generating insights…</p>
+                                <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">This takes about 15 seconds on
+                                    first run</p>
+                            </div>
+
+                            <!-- Insight cards -->
+                            <template v-else>
+                                <div v-for="insight in intelligenceStore.insights" :key="insight.id"
+                                    class="rounded-2xl border overflow-hidden transition-all"
+                                    :class="insight.status === 'ok'
+                                        ? 'border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-800/50'
+                                        : 'border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 opacity-60'">
+
+                                    <!-- Card header -->
+                                    <div class="flex items-center gap-3 px-4 pt-4 pb-2">
+                                        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-lg bg-gradient-to-br shrink-0"
+                                            :class="insightCategoryColor(insight.category)">
+                                            {{ insight.icon }}
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p
+                                                class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                {{ insight.label }}</p>
+                                            <p v-if="insight.value !== null && insight.value !== undefined"
+                                                class="text-xl font-black text-gray-900 dark:text-white leading-tight">
+                                                {{ typeof insight.value === 'number' ? insight.value.toLocaleString() :
+                                                insight.value }}
+                                            </p>
+                                        </div>
+                                        <span class="shrink-0 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full"
+                                            :class="insight.status === 'ok' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400'">
+                                            {{ insight.status === 'ok' ? 'Live' : insight.status }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Narrative -->
+                                    <div v-if="insight.narrative" class="px-4 pb-3">
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{{
+                                            insight.narrative }}</p>
+                                    </div>
+
+                                    <!-- Ask in chat CTA -->
+                                    <div v-if="insight.status === 'ok'" class="px-4 pb-4">
+                                        <button
+                                            @click="usePrompt(`Tell me more about ${insight.label.toLowerCase()}`); showInsightsPanel = false"
+                                            class="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline">
+                                            Ask the bot →
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
+        <!-- ══════════════════════════════════════
+             Point 5B — Report Upload Slide-over Panel
+        ══════════════════════════════════════ -->
+        <Teleport to="body">
+            <Transition name="sheet">
+                <div v-if="showReportsPanel" class="fixed inset-0 z-50 flex items-end md:items-start md:justify-end"
+                    @click.self="showReportsPanel = false">
+                    <div
+                        class="w-full md:w-[480px] md:h-full bg-white dark:bg-slate-900 rounded-t-3xl md:rounded-none md:rounded-l-3xl shadow-2xl flex flex-col max-h-[90vh] md:max-h-screen overflow-hidden border-l border-gray-200 dark:border-slate-700">
+
+                        <!-- Header -->
+                        <div
+                            class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800 shrink-0">
+                            <div>
+                                <h2 class="text-base font-bold text-gray-900 dark:text-white">Internal Reports</h2>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    {{ intelligenceStore.embeddedReports.length }} embedded · {{
+                                        intelligenceStore.totalChunks.toLocaleString() }} chunks searchable
+                                </p>
+                            </div>
+                            <button @click="showReportsPanel = false"
+                                class="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Upload area -->
+                        <div class="px-5 py-4 border-b border-gray-100 dark:border-slate-800 shrink-0">
+                            <p class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
+                                Upload
+                                New Report</p>
+
+                            <!-- File drop zone -->
+                            <label
+                                class="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gray-200 dark:border-slate-700 p-6 cursor-pointer hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors">
+                                <input ref="reportFileInputRef" type="file"
+                                    accept=".pdf,.docx,.doc,.xlsx,.xls,.csv,.txt,.json" class="hidden"
+                                    @change="handleFileChange" />
+                                <div class="text-3xl">{{ reportUploadFile ? '📄' : '📂' }}</div>
+                                <p v-if="reportUploadFile"
+                                    class="text-sm font-semibold text-purple-600 dark:text-purple-400 text-center">{{
+                                    reportUploadFile.name }}</p>
+                                <p v-else class="text-sm text-gray-500 dark:text-gray-400 text-center">Drop PDF, DOCX,
+                                    Excel, or
+                                    CSV here</p>
+                                <p class="text-[10px] text-gray-400 dark:text-gray-500">Max 20 MB · PDF, DOCX, XLSX,
+                                    CSV, TXT
+                                </p>
+                            </label>
+
+                            <!-- Name input -->
+                            <input v-if="reportUploadFile" v-model="reportUploadName"
+                                placeholder="Report name (optional)"
+                                class="mt-3 w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-purple-400 transition-colors" />
+
+                            <!-- Error / success -->
+                            <p v-if="reportUploadError" class="mt-2 text-xs text-red-600 dark:text-red-400">{{
+                                reportUploadError
+                                }}</p>
+                            <p v-if="reportUploadSuccess"
+                                class="mt-2 text-xs text-green-600 dark:text-green-400 font-medium">✓
+                                {{ reportUploadSuccess }}</p>
+
+                            <!-- Upload button -->
+                            <button v-if="reportUploadFile" @click="handleReportUpload"
+                                :disabled="intelligenceStore.uploadLoading"
+                                class="mt-3 w-full rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-sm font-bold py-2.5 transition-colors">
+                                {{ intelligenceStore.uploadLoading ? 'Embedding…' : 'Embed Report' }}
+                            </button>
+                        </div>
+
+                        <!-- Reports list -->
+                        <div class="flex-1 overflow-y-auto px-4 py-4">
+                            <div v-if="intelligenceStore.reportsLoading" class="space-y-2">
+                                <div v-for="i in 3" :key="i"
+                                    class="h-14 bg-gray-100 dark:bg-slate-800 rounded-xl animate-pulse"></div>
+                            </div>
+
+                            <div v-else-if="!intelligenceStore.reports.length"
+                                class="flex flex-col items-center justify-center py-10 text-center">
+                                <div class="text-3xl mb-2">📑</div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">No reports uploaded yet</p>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Upload a P&amp;L, report, or
+                                    CSV and
+                                    ask the bot questions about it</p>
+                            </div>
+
+                            <div v-else class="space-y-2">
+                                <div v-for="report in intelligenceStore.reports" :key="report.id"
+                                    class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors group">
+                                    <div class="text-xl">{{
+                                        { pdf: '📕', docx: '📘', doc: '📘', xlsx: '📗', xls: '📗', csv: '📊', txt: '📄',json:'📋'}[report.file_type]
+                                        ?? '📄' }}</div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{
+                                            report.name
+                                            }}</p>
+                                        <p class="text-xs text-gray-400 dark:text-gray-500">{{ report.chunks_embedded }}
+                                            chunks
+                                            · {{ formatRelative(report.uploaded_at) }}</p>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full"
+                                            :class="reportStatusClass(report.status)">
+                                            {{ report.status }}
+                                        </span>
+                                        <button @click="handleDeleteReport(report.id)"
+                                            class="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
     </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import ChatWidget from '~/components/chatbot-setup/ChatWidget.vue'
+import { useIntelligenceStore } from '~/stores/analyticsStore'
 
 definePageMeta({ layout: 'dashboard' })
 
 // ── Stores & composables ──────────────────────────────────
 const chatbotStore = useChatbotStore()
 const databaseStore = useDatabaseStore()
+const intelligenceStore = useIntelligenceStore()
 const { token } = useAuthStore()
 const config = useRuntimeConfig()
 
@@ -346,6 +619,18 @@ const sessionToRestore = ref(null)
 const sessionHistory = ref([])
 const historyLoading = ref(false)
 const activeSessionId = ref(null)
+
+// Point 5A — Insight cards panel
+const showInsightsPanel = ref(false)
+const insightRefreshing = ref(false)
+
+// Point 5B — Report upload panel
+const showReportsPanel = ref(false)
+const reportUploadName = ref('')
+const reportUploadFile = ref(null)
+const reportUploadError = ref(null)
+const reportUploadSuccess = ref(null)
+const reportFileInputRef = ref(null)
 
 // ── Computed ──────────────────────────────────────────────
 const availableChatbots = computed(() => chatbotStore.chatbots || [])
@@ -473,12 +758,75 @@ onMounted(async () => {
     await Promise.all([
         chatbotStore.fetchChatbots(),
         databaseStore.fetchConnections(),
+        intelligenceStore.fetchInsights(),   // Point 5A
     ])
     if (availableChatbots.value.length > 0) {
         selectedChatbotId.value = availableChatbots.value[0].id
-        await loadSessionHistory()
+        await Promise.all([
+            loadSessionHistory(),
+            intelligenceStore.fetchReports(selectedChatbotId.value),  // Point 5B
+        ])
     }
 })
+
+// Point 5A — Refresh insight cards
+const handleInsightRefresh = async () => {
+    insightRefreshing.value = true
+    await intelligenceStore.refreshInsights()
+    insightRefreshing.value = false
+}
+
+// Point 5B — Report upload
+const handleFileChange = (e) => {
+    const f = e.target.files?.[0]
+    if (!f) return
+    reportUploadFile.value = f
+    if (!reportUploadName.value) {
+        reportUploadName.value = f.name.replace(/\.[^.]+$/, '')
+    }
+    reportUploadError.value = null
+}
+
+const handleReportUpload = async () => {
+    if (!reportUploadFile.value || !selectedChatbotId.value) return
+    reportUploadError.value = null
+    reportUploadSuccess.value = null
+    try {
+        const res = await intelligenceStore.uploadReport(
+            reportUploadFile.value,
+            reportUploadName.value,
+            selectedChatbotId.value
+        )
+        if (res?.success) {
+            reportUploadSuccess.value = `"${reportUploadName.value}" embedded successfully.`
+            reportUploadFile.value = null
+            reportUploadName.value = ''
+            if (reportFileInputRef.value) reportFileInputRef.value.value = ''
+        }
+    } catch (err) {
+        reportUploadError.value = err?.message || 'Upload failed. Please try again.'
+    }
+}
+
+const handleDeleteReport = async (reportId) => {
+    if (!confirm('Delete this report? Its content will no longer be searchable.')) return
+    await intelligenceStore.deleteReport(reportId)
+}
+
+const reportStatusClass = (status) => ({
+    embedded: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    processing: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+    error: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    pending: 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-gray-400',
+}[status] || 'bg-gray-100 text-gray-500')
+
+const insightCategoryColor = (category) => ({
+    revenue: 'from-green-500 to-emerald-600',
+    operations: 'from-blue-500 to-cyan-600',
+    growth: 'from-purple-500 to-violet-600',
+    products: 'from-orange-500 to-amber-600',
+    inventory: 'from-red-500 to-rose-600',
+}[category] || 'from-gray-400 to-gray-500')
 
 watch(selectedChatbotId, (newId) => {
     if (newId) loadSessionHistory()

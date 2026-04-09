@@ -252,7 +252,36 @@ export const useAuthStore = defineStore('auth', {
                 if (savedAvatar && this.user) {
                 this.user.avatar = savedAvatar;
                 }
+            },
+
+        // Item 2: Called by the global API error handler when a 401 is received.
+        // Redirects to login with a friendly session-expired message instead of a blank error.
+        async handleExpiredSession() {
+            console.warn('[AUTH STORE] Token expired — redirecting to login')
+            this.clearAuth()
+            await navigateTo('/login?session_expired=true')
+        },
+
+        // Item 2: Attempt a silent token refresh if token is within 24h of expiry.
+        // Call this on app startup via the auth plugin.
+        async tryRefreshToken() {
+            if (!this.token) return
+            const config = useRuntimeConfig()
+            try {
+                const response = await $fetch(`${config.public.apiBase}/api/auth/refresh`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${this.token}` }
+                })
+                if (response?.token) {
+                    this.token = response.token
+                    this.setTokenCookie(response.token)
+                    console.log('[AUTH STORE] Token refreshed successfully')
+                }
+            } catch (e) {
+                // Refresh failed — token is expired; redirect handled by 401 interceptor
+                console.warn('[AUTH STORE] Token refresh failed:', e?.statusCode)
             }
+        },
 
         
     }
