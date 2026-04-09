@@ -190,18 +190,18 @@ const team = [
   },
   {
     name: "Agboifoh Oseahumen",
-    role: "Head of Engineering",
+    role: "Lead Software Engineer",
     image: "/images/Ose.JPG",
+  },
+  {
+    name: "Faith Stanley-Mike",
+    role: "Business Dev/HR Manager",
+    image: "/images/mrsFaith.jpg",
   },
   {
     name: " Adu Daniel ",
     role: "Frontend developer",
     image: "/images/Daniel.JPG",
-  },
-  {
-    name: "Faith Stanley-Mike",
-    role: "Social Media Manager",
-    image: "/images/mrsFaith.jpg",
   },
   {
     name: "Joseph Ochefu Sunday",
