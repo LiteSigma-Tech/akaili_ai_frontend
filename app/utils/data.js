@@ -254,7 +254,7 @@ export const cta = {
 export const productsuite = [
   {
     "title": "Wakili Bot",
-    "description": "Engage customers instantly with a smart chatbot that uses your business data to deliver fast, accurate support—24/7.",
+    "description": "Engage customers instantly with a smart chatbot that uses your business data to deliver fast, accurate support 24/7.",
     "image": "wakili_productSuites.png",
     "bg": "from-sky-100 to-indigo-100",
     "features": [
@@ -278,7 +278,7 @@ export const productsuite = [
   },
   {
     "title": "Automation Tools",
-    "description": "Automate your repetitive workflows and responses so you can focus on what really matters—growing your business.",
+    "description": "Automate your repetitive workflows and responses so you can focus on what really matters, Growing your business.",
     "image": "automation_productSuites.png",
     "bg": "from-cyan-50 to-sky-50",
     "features": [

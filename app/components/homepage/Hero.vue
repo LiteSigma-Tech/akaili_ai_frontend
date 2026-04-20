@@ -35,16 +35,7 @@
         <!-- LEFT: Text Content -->
         <div class="lg:col-span-6 text-center lg:text-left pt-8">
           
-          <!-- Badge -->
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border mb-6 transition-colors border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-900/30">
-            <span class="flex h-2 w-2 relative">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-[#9E4CFF]"></span>
-            </span>
-            <span class="text-xs font-semibold tracking-wide uppercase text-[#9E4CFF] dark:text-purple-300">
-              New Version 2.0 Live
-            </span>
-          </div>
+        
 
           <!-- Main Header (Updated Font Sizes: 3xl/4xl/5xl) -->
           <!-- Inside Hero.vue -->

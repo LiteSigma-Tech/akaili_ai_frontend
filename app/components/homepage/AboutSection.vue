@@ -10,32 +10,24 @@
         >
           We Are Xeli AI
         </h2>
-        <p
-          class="mt-6 text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed"
-        >
-          We are on a mission to democratize artificial intelligence for
-          businesses of all sizes. We believe that powerful, 24/7 customer
-          support shouldn't be a luxury—it should be a standard.
+        <p class="mt-6 text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
+          We are on a mission to democratize artificial intelligence for businesses of all sizes. 
+          We believe that powerful, 24/7 customer support shouldn't be a luxury, it should be a standard.
         </p>
       </div>
 
       <!-- 2. THE STORY (Grid Layout) -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-24">
         <div data-aos="fade-right">
-          <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">
-            Bridging the Gap Between Data and Conversation
-          </h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
-            Founded with a simple idea: your data already has the answers your
-            customers need. Xeli AI acts as the intelligent bridge, ingesting
-            your knowledge base—PDFs, spreadsheets, and docs—and turning them
-            into natural, human-like conversations.
-          </p>
-          <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
-            Whether you are a startup needing to scale support or an enterprise
-            looking to optimize workflows, our engine is built to learn from
-            you, for you.
-          </p>
+            <h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+                Bridging the Gap Between Data and Conversation
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+                Founded with a simple idea: your data already has the answers your customers need. Xeli AI acts as the intelligent bridge, ingesting your knowledge base PDFs, spreadsheets, and docs and turning them into natural, human-like conversations.
+            </p>
+            <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+                Whether you are a startup needing to scale support or an enterprise looking to optimize workflows, our engine is built to learn from you, for you.
+            </p>
         </div>
         <div class="relative" data-aos="fade-left">
           <!-- Decorative gradient blob -->
