@@ -56,7 +56,7 @@
             <input v-model="form.password" :type="showPassword ? 'text' : 'password'" required minlength="8" class="w-full px-3 py-3 pr-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors
               bg-white border-gray-300 text-gray-900 placeholder-gray-400
               dark:bg-slate-900 dark:border-slate-700 dark:text-white dark:placeholder-gray-500"
-              :class="{ 'border-red-500': fieldErrors.password }" placeholder="Create a password (min. 8 characters)" />
+              :class="{ 'border-red-500': fieldErrors.password }" placeholder="Create a password" />
 
             <!-- Toggle Icon -->
             <button type="button" @click="showPassword = !showPassword"
@@ -65,7 +65,35 @@
               <EyeOff v-else class="w-5 h-5" />
             </button>
           </div>
-          <!-- UPDATED: Show field-specific error -->
+
+          <!-- Item 13: Real-time password strength indicator -->
+          <div v-if="form.password" class="mt-2 space-y-1">
+            <div class="flex gap-1 mb-2">
+              <div v-for="n in 4" :key="n"
+                class="h-1 flex-1 rounded-full transition-colors duration-200"
+                :class="passwordStrengthScore >= n ? passwordStrengthColor : 'bg-gray-200 dark:bg-slate-700'"
+              />
+            </div>
+            <div class="grid grid-cols-2 gap-x-4 gap-y-0.5">
+              <span class="flex items-center gap-1.5 text-xs" :class="passwordChecks.length ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                8+ characters
+              </span>
+              <span class="flex items-center gap-1.5 text-xs" :class="passwordChecks.uppercase ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                Uppercase letter
+              </span>
+              <span class="flex items-center gap-1.5 text-xs" :class="passwordChecks.lowercase ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                Lowercase letter
+              </span>
+              <span class="flex items-center gap-1.5 text-xs" :class="passwordChecks.number ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                Number
+              </span>
+            </div>
+          </div>
+
           <p v-if="fieldErrors.password" class="mt-1 text-sm text-red-600 dark:text-red-400">
             {{ fieldErrors.password }}
           </p>
@@ -127,6 +155,26 @@ const fieldErrors = ref({})
 
 const hasFieldErrors = computed(() => {
   return Object.keys(fieldErrors.value).length > 0
+})
+
+// Item 13: Real-time password strength checks
+const passwordChecks = computed(() => ({
+  length:    form.value.password.length >= 8,
+  uppercase: /[A-Z]/.test(form.value.password),
+  lowercase: /[a-z]/.test(form.value.password),
+  number:    /[0-9]/.test(form.value.password),
+}))
+
+const passwordStrengthScore = computed(() =>
+  Object.values(passwordChecks.value).filter(Boolean).length
+)
+
+const passwordStrengthColor = computed(() => {
+  const score = passwordStrengthScore.value
+  if (score <= 1) return 'bg-red-500'
+  if (score === 2) return 'bg-orange-400'
+  if (score === 3) return 'bg-yellow-400'
+  return 'bg-green-500'
 })
 
 const handleRegister = async () => {

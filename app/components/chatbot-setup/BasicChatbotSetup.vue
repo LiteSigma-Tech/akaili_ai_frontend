@@ -77,6 +77,20 @@ const isEditing = inject('isEditing')
                 <option value="playful">Playful</option>
             </select>
 
+            <!-- Item 12/7: Chatbot Type — controls AI persona and focus for this chatbot -->
+            <label class="block text-sm md:text-base font-semibold mt-4 text-gray-800 dark:text-gray-200">Chatbot Type</label>
+            <select
+                v-model="formData.type"
+                class="mt-2 block w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all shadow-sm"
+            >
+                <option value="general">General</option>
+                <option value="customer_service">Customer Service</option>
+                <option value="sales">Sales Assistant</option>
+            </select>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Shapes how the AI responds — customer service focuses on resolution, sales on product benefits.
+            </p>
+
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-8 text-right italic">
                 {{ isEditing ? 'Last updated: ' + (new Date().toLocaleTimeString()) : 'Ready to create' }}
             </p>

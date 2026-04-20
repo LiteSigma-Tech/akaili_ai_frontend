@@ -47,10 +47,7 @@
                 <select v-model="companyForm.industry" required
                   class="w-full rounded-lg p-3 outline-none transition-all border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-purple-500 dark:bg-slate-900/50 dark:border-slate-700 dark:text-white">
                   <option value="">Select Industry</option>
-                  <option value="technology">Technology</option>
-                  <option value="ecommerce">E-commerce</option>
-                  <option value="healthcare">Healthcare</option>
-                  <option value="other">Other</option>
+                  <option v-for="ind in industries" :key="ind.value" :value="ind.value">{{ ind.label }}</option>
                 </select>
               </div>
 
@@ -119,7 +116,7 @@
                 <select v-model="chatbotForm.type"
                   class="w-full rounded-lg p-3 outline-none transition-all border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-purple-500 dark:bg-slate-900/50 dark:border-slate-700 dark:text-white">
                   <option value="general">General</option>
-                  <option value="customer_support">Customer Support</option>
+                  <option value="customer_service">Customer Service</option>
                   <option value="sales">Sales Assistant</option>
                 </select>
               </div>
@@ -206,6 +203,7 @@
 <script setup>
 definePageMeta({ layout: 'empty', middleware: 'auth' })
 
+const { industries } = useIndustryOptions()
 const authStore = useAuthStore()
 const onboardingStore = useOnboardingStore()
 const businessStore = useBusinessStore()
