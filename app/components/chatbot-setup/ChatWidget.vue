@@ -453,7 +453,7 @@ const requestEndChat = async () => {
             })
         } catch (err) {
             console.error('Failed to mark conversation as ended:', err)
-            // Continue anyway — rating will also mark it as ended
+        
         }
     }
 

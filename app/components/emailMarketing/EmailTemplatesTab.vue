@@ -245,8 +245,6 @@ const templateToDuplicate = ref(null)
 const actionLoading = reactive({})
 const duplicating = ref(false)
 
-// Stats now come from store getters (emailStore.totalTemplatesCount, etc.)
-// which prefer API-sourced templateStats — no local computed needed.
 
 const debouncedSearch = debounce(() => {
     emailStore.fetchTemplates()

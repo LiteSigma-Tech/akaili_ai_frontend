@@ -871,7 +871,7 @@ export const useEmailMarketingStore = defineStore('emailMarketing', {
                 })
 
                 if (response.success) {
-                    // FIX: normalise before updating store — backend returns _id which findIndex misses
+                    
                     const campaign = this._normaliseCampaign(response.data.campaign)
                     const index = this.campaigns.findIndex(c => c.id === campaignId)
                     if (index !== -1) {
