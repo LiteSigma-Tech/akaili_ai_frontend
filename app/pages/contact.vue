@@ -35,7 +35,8 @@
           <dl class="mt-6 space-y-4 text-sm text-gray-600 dark:text-gray-300">
             <div>
               <dt class="font-medium text-gray-900 dark:text-gray-200">Email</dt>
-              <dd class="mt-1">support@akili.ai</dd>
+              <!-- FIX: Updated from support@akili.ai to correct Xeli AI support email -->
+              <dd class="mt-1">hello@xeliai.com</dd>
             </div>
             <div>
               <dt class="font-medium text-gray-900 dark:text-gray-200">Phone</dt>
@@ -50,14 +51,20 @@
           <div class="mt-6">
             <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-200">Or reach us on</h4>
             <div class="flex items-center gap-3 mt-3 text-gray-500 dark:text-white">
-              <a aria-label="Twitter" href="#" class="inline-flex items-center justify-center w-10 h-10 rounded-md bg-gray-200 hover:bg-gray-300 dark:bg-white/5 dark:hover:bg-white/10 transition-colors">
+              <!-- FIX: All social links updated from href="#" to real Xeli AI social profiles -->
+              <a aria-label="Twitter / X" href="https://twitter.com/xeliai" target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center justify-center w-10 h-10 rounded-md bg-gray-200 hover:bg-gray-300 dark:bg-white/5 dark:hover:bg-white/10 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M8.29 20c7.547 0 11.675-6.155 11.675-11.49 0-.175 0-.349-.012-.522A8.18 8.18 0 0022 5.92a8.27 8.27 0 01-2.357.637 4.07 4.07 0 001.804-2.245 8.18 8.18 0 01-2.605.98A4.11 4.11 0 0015.447 4c-2.266 0-4.102 1.827-4.102 4.08 0 .32.036.632.105.931A11.66 11.66 0 013 5.15a4.07 4.07 0 001.27 5.444 4.06 4.06 0 01-1.856-.512v.05C4.41 13.13 6.25 14.5 8.47 14.69a4.1 4.1 0 01-1.85.07 4.11 4.11 0 003.83 2.83A8.233 8.233 0 012 18.58 11.616 11.616 0 008.29 20"/></svg>
               </a>
-              <a aria-label="LinkedIn" href="#" class="inline-flex items-center justify-center w-10 h-10 rounded-md bg-gray-200 hover:bg-gray-300 dark:bg-white/5 dark:hover:bg-white/10 transition-colors">
+              <a aria-label="LinkedIn" href="https://linkedin.com/company/xeliai" target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center justify-center w-10 h-10 rounded-md bg-gray-200 hover:bg-gray-300 dark:bg-white/5 dark:hover:bg-white/10 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-14h4v2a4 4 0 014-1zM2 9h4v11H2z"/></svg>
               </a>
-              <a aria-label="Github" href="#" class="inline-flex items-center justify-center w-10 h-10 rounded-md bg-gray-200 hover:bg-gray-300 dark:bg-white/5 dark:hover:bg-white/10 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 00-3.79 23.4c.6.11.82-.26.82-.58v-2.1c-3.34.73-4.04-1.62-4.04-1.62-.54-1.4-1.32-1.77-1.32-1.77-1.08-.74.08-.72.08-.72 1.2.08 1.83 1.24 1.83 1.24 1.06 1.82 2.78 1.3 3.46.99.11-.78.42-1.3.76-1.6-2.66-.3-5.46-1.33-5.46-5.9 0-1.3.47-2.36 1.24-3.19-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23a11.44 11.44 0 016 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.65.24 2.87.12 3.17.77.83 1.24 1.89 1.24 3.19 0 4.58-2.8 5.6-5.48 5.89.43.38.81 1.13.81 2.28v3.39c0 .32.21.7.82.58A12 12 0 0012 .5"/></svg>
+              <a aria-label="Instagram" href="https://instagram.com/xeliai" target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center justify-center w-10 h-10 rounded-md bg-gray-200 hover:bg-gray-300 dark:bg-white/5 dark:hover:bg-white/10 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                </svg>
               </a>
             </div>
           </div>
