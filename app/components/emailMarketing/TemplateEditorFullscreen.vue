@@ -149,10 +149,7 @@ import { useToast } from 'vue-toastification'
 // ─── Props ──────────────────────────────────────────────────────────────────
 
 const props = defineProps({
-    /**
-     * 'template' — standalone template editor (default).
-     * 'campaign' — used inside CampaignEditorModal; emits 'save' with {html, design}.
-     */
+   
     mode: {
         type: String,
         default: 'template',
@@ -360,7 +357,7 @@ const applyToCampaign = async () => {
             design: data.design,
         })
     } catch {
-        $toast.error('Failed to export design — please try again')
+        $toast.error('Failed to export design please try again')
     } finally {
         saving.value = false
     }

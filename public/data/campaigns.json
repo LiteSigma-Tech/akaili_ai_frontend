@@ -18,7 +18,7 @@
   {
     "id": 3,
     "title": "New Year Kickoff Newsletter",
-    "subject": "🎉 Welcome 2026 — See What’s Coming!",
+    "subject": "🎉 Welcome 2026  See What’s Coming!",
     "status": "draft",
     "send_date": "2025-12-30",
     "emailsSent": 0
@@ -34,7 +34,7 @@
   {
     "id": 5,
     "title": "Customer Feedback Request",
-    "subject": "We value your opinion — Share your thoughts!",
+    "subject": "We value your opinion Share your thoughts!",
     "status": "sent",
     "send_date": "2025-10-20",
     "emailsSent": 4680

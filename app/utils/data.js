@@ -281,7 +281,7 @@ export const productsuite = [
   },
   {
     "title": "Automation Tools",
-    "description": "Automate your repetitive workflows and responses so you can focus on what really matters—growing your business.",
+    "description": "Automate your repetitive workflows and responses so you can focus on what really matters, Growing your business.",
     "image": "automation_productSuites.png",
     "bg": "from-cyan-50 to-sky-50",
     "features": [

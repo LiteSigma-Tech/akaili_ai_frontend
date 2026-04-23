@@ -9,7 +9,7 @@
           Get in Touch
         </h1>
         <p class="mt-3 text-lg max-w-2xl mx-auto text-gray-600 dark:text-gray-300">
-          Have a question about our AI chatbots or want a demo? Fill the form or reach us directly — we typically respond within one business day.
+          Have a question about our AI chatbots or want a demo? Fill the form or reach us directly,  we typically respond within one business day.
         </p>
       </div>
 
@@ -183,7 +183,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="p-6 rounded-2xl border transition-colors bg-gray-50 border-gray-200 dark:bg-white/5 dark:border-white/10">
             <h4 class="font-semibold text-gray-900 dark:text-white">Sales FAQ</h4>
-            <p class="text-sm mt-2 text-gray-600 dark:text-gray-300">How long does setup take? — Usually 1–2 weeks depending on integrations.</p>
+            <p class="text-sm mt-2 text-gray-600 dark:text-gray-300">How long does setup take? Usually 1–2 weeks depending on integrations.</p>
           </div>
           <div class="p-6 rounded-2xl border transition-colors bg-gray-50 border-gray-200 dark:bg-white/5 dark:border-white/10">
             <h4 class="font-semibold text-gray-900 dark:text-white">Privacy</h4>
@@ -258,7 +258,7 @@ async function handleSubmit() {
     // Simulating success for UI demo
     await new Promise(resolve => setTimeout(resolve, 1500))
 
-    status.message = 'Thanks — we received your message. We will be in touch shortly.'
+    status.message = 'Thanks,  We received your message. We will be in touch shortly.'
     status.type = 'success'
     clearForm()
   } catch (err) {

@@ -21,7 +21,7 @@
                             Digital Brain
                         </h1>
                         <p class="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400">
-                            Query your business data in plain English — full internal access
+                            Query your business data in plain English, full internal access
                         </p>
                     </div>
                 </div>
@@ -255,7 +255,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span class="text-[11px] font-black uppercase tracking-widest">Internal Mode — Full Data
+                    <span class="text-[11px] font-black uppercase tracking-widest">Internal Mode  Full Data
                         Access</span>
                 </div>
                 <ul class="flex items-center gap-8 text-[11px] font-medium text-slate-500 dark:text-slate-400">

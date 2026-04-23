@@ -12,7 +12,8 @@
         </p>
 
         <div class="flex items-center space-x-4 mt-6"> <NuxtLink 
-    to="#" 
+    to="https://www.facebook.com/people/Xeli-AI/61586431143047/" 
+    target="_blank"
     aria-label="facebook" 
     class="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200"
   >
@@ -20,7 +21,8 @@
   </NuxtLink>
 
   <NuxtLink 
-    to="#" 
+    to="https://www.instagram.com/xeli_ai/" 
+    target="_blank"
     aria-label="instagram" 
     class="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200"
   >
@@ -28,12 +30,15 @@
   </NuxtLink>
 
   <NuxtLink 
-    to="#" 
-    aria-label="youtube" 
-    class="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200"
-  >
-    <Youtube class="w-5 h-5 text-red-600" />
-  </NuxtLink>
+  to="https://www.linkedin.com/company/xeli-ai" 
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="LinkedIn" 
+  class="w-8 h-8 rounded-full flex items-center justify-center bg-paper-100 hover:bg-paper-200 dark:bg-white/5 dark:hover:bg-white/10 transition-all"
+>
+  <Linkedin
+   class="w-5 h-5 text-[#0077B5]" />
+</NuxtLink>
 
 
          
@@ -88,5 +93,5 @@
 </template>
 
 <script setup>
-import { Facebook, Instagram, Youtube } from "lucide-vue-next";
+import { Facebook, Instagram, Linkedin } from "lucide-vue-next";
 </script>
