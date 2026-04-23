@@ -111,7 +111,7 @@
         </div>
       </section>
 
-      <!-- FEATURE C: DIALOGUE AUDIT -->
+      <!-- FEATURE C: DIALOGUE AUDIT / LIVE MONITORING -->
       <section id="audit-streams" class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-24 items-center">
         <div class="space-y-8 reveal-left">
           <div class="w-14 h-14 rounded-2xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600">
@@ -121,7 +121,13 @@
           <p class="text-xl text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
             Watch your AI talk to customers in real-time. Review conversation quality, track customer satisfaction, and jump in whenever a human touch is needed.
           </p>
-          <NuxtLink to="/get-started" class="inline-flex items-center gap-3 text-[#9E4CFF] font-black uppercase tracking-widest text-sm group">
+          <!--
+            FIX: "LEARN ABOUT MONITORING" was linked to /get-started (wrong destination).
+            Now correctly routes to the Live Monitoring dashboard page.
+            If a dedicated public docs/blog page for monitoring exists, update the href
+            to that URL instead (e.g. href="https://blog.xeliai.com/live-monitoring").
+          -->
+          <NuxtLink to="/dashboard/live-monitoring" class="inline-flex items-center gap-3 text-[#9E4CFF] font-black uppercase tracking-widest text-sm group">
             LEARN ABOUT MONITORING <span class="group-hover:translate-x-2 transition-transform">→</span>
           </NuxtLink>
         </div>
@@ -158,7 +164,6 @@
                     Every chat is a potential customer. We set up automated email systems that follow up with leads immediately after they finish talking to your AI.
                   </p>
                </div>
-               <!-- OPTIONAL SMALL ICON OR MINI IMAGE HERE -->
             </div>
             <div class="h-1 w-12 bg-slate-200 dark:bg-slate-800 group-hover:w-full transition-all duration-700"></div>
           </div>
