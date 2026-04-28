@@ -253,7 +253,7 @@ export const cta = {
 }
 export const productsuite = [
   {
-    "title": "Wakili Bot",
+    "title": "XeliAi Bot",
     "description": "Engage customers instantly with a smart chatbot that uses your business data to deliver fast, accurate support 24/7.",
     "image": "wakili_productSuites.png",
     "bg": "from-sky-100 to-indigo-100",
