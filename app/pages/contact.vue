@@ -35,7 +35,8 @@
           <dl class="mt-6 space-y-4 text-sm text-gray-600 dark:text-gray-300">
             <div>
               <dt class="font-medium text-gray-900 dark:text-gray-200">Email</dt>
-              <dd class="mt-1">support@akili.ai</dd>
+              <!-- FIX: Updated from support@akili.ai to correct Xeli AI support email -->
+              <dd class="mt-1">hello@xeliai.com</dd>
             </div>
             <div>
               <dt class="font-medium text-gray-900 dark:text-gray-200">Phone</dt>

@@ -111,7 +111,7 @@
         </div>
       </section>
 
-      <!-- FEATURE C: DIALOGUE AUDIT -->
+      <!-- FEATURE C: DIALOGUE AUDIT / LIVE MONITORING -->
       <section id="audit-streams" class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-24 items-center">
         <div class="space-y-8 reveal-left">
           <div class="w-14 h-14 rounded-2xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600">
@@ -155,7 +155,6 @@
                     Every chat is a potential customer. We set up automated email systems that follow up with leads immediately after they finish talking to your AI.
                   </p>
                </div>
-               <!-- OPTIONAL SMALL ICON OR MINI IMAGE HERE -->
             </div>
             <div class="h-1 w-12 bg-slate-200 dark:bg-slate-800 group-hover:w-full transition-all duration-700"></div>
           </div>

@@ -198,7 +198,7 @@ export const testimonials = [
   {
     id: 1,
     quote:
-      "Xeli ai has revolutionized our customer support. We’ve seen a 60% reduction in response time and our customers love the instant help.",
+      "Xeli AI has revolutionized our customer support. We've seen a 60% reduction in response time and our customers love the instant help.",
     name: "Sarah Johnson",
     role: "CEO, TechStart, Inc",
     avatar: "/avatar_sarah.png"
@@ -222,7 +222,7 @@ export const testimonials = [
   {
     id: 4,
     quote:
-      "Xeli ai has revolutionized our customer support. We’ve seen a 60% reduction in response time and our customers love the instant help.",
+      "Xeli AI has revolutionized our customer support. We've seen a 60% reduction in response time and our customers love the instant help.",
     name: "Sarah Johnson",
     role: "CEO, TechStart, Inc",
     avatar: "/avatar_sarah.png"
@@ -248,9 +248,10 @@ export const testimonials = [
 export const cta = {
   heading: "Ready to Transform Your Customer Support?",
   subheading:
-    "Join thousands of businesses already using Xeli ai to provide exceptional customer experiences.",
+    "Join thousands of businesses already using Xeli AI to provide exceptional customer experiences.",
   buttonText: "Get Started",
 }
+
 export const productsuite = [
   {
     "title": "XeliAi Bot",
@@ -289,5 +290,3 @@ export const productsuite = [
     ]
   }
 ]
-
-
