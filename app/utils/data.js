@@ -254,11 +254,9 @@ export const cta = {
 
 export const productsuite = [
   {
-    // FIX: Renamed from "Wakili Bot" to "Xeli AI Bot" per Faith's review
-    "title": "Xeli AI Bot",
-    "description": "Engage customers instantly with a smart chatbot that uses your business data to deliver fast, accurate support—24/7.",
-    // FIX: Image filename updated to match new brand name
-    "image": "xeliai_bot_productSuites.png",
+    "title": "XeliAi Bot",
+    "description": "Engage customers instantly with a smart chatbot that uses your business data to deliver fast, accurate support 24/7.",
+    "image": "wakili_productSuites.png",
     "bg": "from-sky-100 to-indigo-100",
     "features": [
       "Real-time responses from your data",

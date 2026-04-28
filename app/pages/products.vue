@@ -121,15 +121,6 @@
           <p class="text-xl text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
             Watch your AI talk to customers in real-time. Review conversation quality, track customer satisfaction, and jump in whenever a human touch is needed.
           </p>
-          <!--
-            FIX: "LEARN ABOUT MONITORING" was linked to /get-started (wrong destination).
-            Now correctly routes to the Live Monitoring dashboard page.
-            If a dedicated public docs/blog page for monitoring exists, update the href
-            to that URL instead (e.g. href="https://blog.xeliai.com/live-monitoring").
-          -->
-          <NuxtLink to="/dashboard/live-monitoring" class="inline-flex items-center gap-3 text-[#9E4CFF] font-black uppercase tracking-widest text-sm group">
-            LEARN ABOUT MONITORING <span class="group-hover:translate-x-2 transition-transform">→</span>
-          </NuxtLink>
         </div>
         <!-- FEATURE IMAGE: Live Monitoring / Conversation List -->
         <div class="reveal-right aspect-video bg-slate-50 dark:bg-slate-900 rounded-[48px] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">

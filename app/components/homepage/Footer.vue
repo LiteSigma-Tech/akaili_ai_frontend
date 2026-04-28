@@ -51,7 +51,6 @@
         <nav class="flex flex-col space-y-2 text-sm">
           <NuxtLink to="/features" class="text-[#9CA3AF] hover:text-gray-200">Features</NuxtLink>
           <NuxtLink to="/pricing" class="text-[#9CA3AF] hover:text-gray-200">Pricing</NuxtLink>
-          <NuxtLink to="/api" class="text-[#9CA3AF] hover:text-gray-200">API</NuxtLink>
           
         </nav>
       </div>
