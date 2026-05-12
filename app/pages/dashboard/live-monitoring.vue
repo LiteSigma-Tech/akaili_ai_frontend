@@ -165,7 +165,10 @@ import { ChevronRight } from 'lucide-vue-next'
 import StatCard from '~/components/StatCard.vue'
 import ConversationDetailModal from '~/components/ConversationDetailModal.vue'
 
-definePageMeta({ layout: 'dashboard' })
+definePageMeta({
+  layout: 'dashboard',
+  middleware: ['auth']
+})
 
 const conversationStore = useConversationStore()
 const chatbotStore = useChatbotStore()

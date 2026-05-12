@@ -601,7 +601,10 @@ import { ref, computed, onMounted, watch } from 'vue'
 import ChatWidget from '~/components/chatbot-setup/ChatWidget.vue'
 import { useIntelligenceStore } from '~/stores/analyticsStore'
 
-definePageMeta({ layout: 'dashboard' })
+definePageMeta({
+  layout: 'dashboard',
+  middleware: ['auth']
+})
 
 // ── Stores & composables ──────────────────────────────────
 const chatbotStore = useChatbotStore()

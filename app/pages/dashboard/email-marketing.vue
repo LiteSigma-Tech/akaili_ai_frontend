@@ -160,7 +160,8 @@
     import { useToast } from "vue-toastification/dist/index.mjs" 
     
 definePageMeta({
-    layout: 'dashboard'
+  layout: 'dashboard',
+  middleware: ['auth']
 })
 
 
