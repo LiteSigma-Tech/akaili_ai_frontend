@@ -418,7 +418,10 @@ import { MessageSquare, Star, Users, TrendingUp, ArrowUpRight, ArrowDownRight } 
 import FullReportModal from '~/components/analytics/FullReportModal.vue'
 import { useAnalyticsStore } from '~/stores/analyticsStore'
 
-definePageMeta({ layout: 'dashboard' })
+definePageMeta({
+  layout: 'dashboard',
+  middleware: ['auth']
+})
 
 const analyticsStore = useAnalyticsStore()
 const selectedRange = ref('7d')

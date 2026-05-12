@@ -235,7 +235,10 @@ import {
 } from 'lucide-vue-next'
 import ChatWidget from '~/components/chatbot-setup/ChatWidget.vue'
 
-definePageMeta({ layout: 'dashboard' })
+definePageMeta({
+  layout: 'dashboard',
+  middleware: ['auth']
+})
 
 const chatbotStore = useChatbotStore()
 const databaseStore = useDatabaseStore()

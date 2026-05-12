@@ -19,6 +19,14 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
     const user = authStore.user
 
+    // Guard: isLoggedIn can be true while user is null during an auth-plugin race
+    // (token cookie present but /profile fetch hasn't resolved yet, or cleared on error).
+    // Treat this as unauthenticated to avoid TypeError crashes that surface as 500.
+    if (!user) {
+        authStore.clearAuth()
+        return navigateTo('/login')
+    }
+
     // Allow access to business selector
     if (to.path === '/select-business') {
         return

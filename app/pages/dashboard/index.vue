@@ -120,7 +120,8 @@ import EmptyState from '~/components/EmptyState.vue'
 import { Plus } from 'lucide-vue-next'
 
 definePageMeta({
-  layout: 'dashboard'
+  layout: 'dashboard',
+  middleware: ['auth']
 })
 
 

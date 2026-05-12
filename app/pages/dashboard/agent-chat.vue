@@ -189,7 +189,8 @@ import { Send, ChevronLeft, MessageSquare, RefreshCcw, Inbox, MessageCircle, Clo
 import { useToast } from 'vue-toastification'
 
 definePageMeta({
-  layout: 'dashboard'
+  layout: 'dashboard',
+  middleware: ['auth']
 })
 
 const handoverStore = useAgentHandoverStore()
