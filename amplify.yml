@@ -4,10 +4,10 @@ frontend:
     preBuild:
       commands:
         - echo "Installing dependencies using pnpm..."
-        - nvm install 20
-        - nvm use 20
+        - nvm install 22
+        - nvm use 22
         - corepack enable
-        - corepack prepare pnpm@latest --activate
+        - corepack prepare pnpm@8.15.9 --activate
         - pnpm install
         - pnpm add -D @esbuild-plugins/node-globals-polyfill
     build:
