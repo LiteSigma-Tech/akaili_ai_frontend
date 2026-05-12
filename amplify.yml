@@ -4,8 +4,8 @@ frontend:
     preBuild:
       commands:
         - echo "Installing dependencies using pnpm..."
-        - nvm install 20
-        - nvm use 20
+        - nvm install 22
+        - nvm use 22
         - corepack enable
         - corepack prepare pnpm@latest --activate
         - pnpm install
