@@ -74,19 +74,20 @@
           <NuxtLink to="/contact" class="text-[#9CA3AF] hover:text-gray-200">Help Center</NuxtLink>
           <NuxtLink to="/contact" class="text-[#9CA3AF] hover:text-gray-200">Contact</NuxtLink>
           <NuxtLink to="/contact" class="text-[#9CA3AF] hover:text-gray-200">Privacy</NuxtLink>
-          <NuxtLink to="/about" class="text-[#9CA3AF] hover:text-gray-200">Terms</NuxtLink>
+            <NuxtLink to="/terms" class="text-[#9CA3AF] hover:text-gray-200">Terms of Service</NuxtLink>
         </nav>
       </div>
     </div>
 
     <!-- bottom -->
-    <div class="mt-8 w-95% mx-auto px-6 border-t border-white/10 pt-8 flex justify-center items-center  text-sm">
-     <p class="md:w-auto text-center text-lg text-[#9CA3AF]">
-  © {{ new Date().getFullYear() }} Xeli ai. All rights reserved.
-</p>
-
-
-     
+    <div class="mt-8 w-full mx-auto px-6 border-t border-white/10 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm">
+      <p class="text-lg text-[#9CA3AF] text-center sm:text-left">
+        © {{ new Date().getFullYear() }} Xeli AI. All rights reserved.
+      </p>
+      <div class="flex items-center gap-6">
+        <NuxtLink to="/terms" class="text-[#9CA3AF] hover:text-gray-200 text-sm">Terms of Service</NuxtLink>
+        <NuxtLink to="/contact" class="text-[#9CA3AF] hover:text-gray-200 text-sm">Privacy</NuxtLink>
+      </div>
     </div>
   </footer>
 </template>
