@@ -479,15 +479,15 @@
                             <div class="flex flex-col gap-4">
                                 <div class="bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 px-4 py-3">
                                     <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">XPT needed to withdraw</div>
-                                    <div class="text-xl font-bold">{{ referralStore.xptToWithdrawal }} XPT</div>
+                                    <div class="text-xl text-gray-800 dark:text-gray-100  font-bold">{{ referralStore.xptToWithdrawal }} XPT</div>
                                 </div>
                                 <div class="bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 px-4 py-3">
                                     <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Current withdrawal value</div>
-                                    <div class="text-xl font-bold">₦{{ referralStore.withdrawableNaira.toLocaleString('en-NG') }}</div>
+                                    <div class="text-xl text-gray-800 dark:text-gray-100  font-bold">₦{{ referralStore.withdrawableNaira.toLocaleString('en-NG') }}</div>
                                 </div>
                                 <div class="bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 px-4 py-3">
                                     <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Past withdrawals</div>
-                                    <div class="text-xl font-bold">{{ referralStore.withdrawalHistory.length }}</div>
+                                    <div class="text-xl text-gray-800 dark:text-gray-100  font-bold">{{ referralStore.withdrawalHistory.length }}</div>
                                 </div>
                             </div>
                         </div>
@@ -496,15 +496,15 @@
                             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 border-l-4 border-l-purple-400 dark:border-l-purple-500 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 flex items-center gap-4">
                                 <Users class="w-7 h-7 text-gray-400" />
                                 <div>
-                                    <div class="text-2xl font-bold">{{ statsCount.referrals }}</div>
+                                    <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ statsCount.referrals }}</div>
                                     <div class="text-xs text-gray-500 mt-1">Total Referrals</div>
                                 </div>
                             </div>
                             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 border-l-4 border-l-amber-400 dark:border-l-amber-500 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 flex items-center gap-4">
                                 <Trophy class="w-7 h-7 text-[#9E4CFF]" />
                                 <div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-2xl font-bold">{{ statsCount.paidReferrals }}</span>
+                                    <div class="flex items-center text-gray-800 dark:text-gray-100 gap-2">
+                                        <span class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ statsCount.paidReferrals }}</span>
                                         <UBadge v-if="referralStore.totalPaidReferrals > 0" color="purple" size="xs">Earning discounts</UBadge>
                                     </div>
                                     <div class="text-xs text-gray-500 mt-1">Paid Conversions</div>
@@ -513,7 +513,7 @@
                             <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 border-l-4 border-l-green-400 dark:border-l-green-500 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 flex items-center gap-4">
                                 <Tag class="w-7 h-7 text-yellow-500" />
                                 <div>
-                                    <div class="text-2xl font-bold">{{ statsCount.discounts }}</div>
+                                    <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ statsCount.discounts }}</div>
                                     <div class="text-xs text-gray-500 mt-1">Discounts Queued</div>
                                     <div class="text-xs text-gray-400">10 percent each</div>
                                 </div>
@@ -545,7 +545,7 @@
                             <div class="flex items-center justify-between mb-2">
                                 <div class="flex items-center gap-2">
                                     <Trophy class="w-5 h-5 text-[#9E4CFF]" />
-                                    <span class="font-semibold">Milestone Progress</span>
+                                    <span class="font-semibold text-gray-800 dark:text-gray-100">Milestone Progress</span>
                                 </div>
                                 <span class="text-xs text-gray-500">{{ referralStore.milestoneProgress }} of 3 paid referrals</span>
                             </div>
@@ -567,11 +567,13 @@
                                 <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-6 shadow-sm flex flex-col">
                                     <div class="flex items-center gap-2 mb-2">
                                         <div class="bg-purple-50 dark:bg-purple-500/10 rounded-lg p-2"><Tag class="w-5 h-5 text-[#9E4CFF]" /></div>
-                                        <span class="font-semibold">Subscription Discount</span>
+                                        <span class="font-semibold text-gray-800 dark:text-gray-100">Subscription Discount</span>
                                     </div>
                                     <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">Generate a 15 percent discount code for your next payment. Stacks with other discounts up to 25 percent total.</div>
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <UBadge color="purple">15 XPT</UBadge>
+                                    <div class="flex text-gray-500 dark:text-gray-400 items-center gap-2 mb-2">
+                                        <UBadge
+                                          class="text-purple"
+                                         color="purple">15 XPT</UBadge>
                                         <span v-if="referralStore.xptBalance >= 15" class="text-green-500 text-xs">Available</span>
                                         <span v-else class="text-gray-400 text-xs">Not enough XPT</span>
                                     </div>
@@ -583,8 +585,8 @@
                                             <span v-else>Copy</span>
                                         </button>
                                     </div>
-                                    <template v-else>
-                                        <UButton :disabled="referralStore.xptBalance < 15" color="primary" class="mt-2" @click="() => {
+                                         <template v-else>
+                                        <UButton :disabled="referralStore.xptBalance < 15" color="primary" class="mt-2 text-gray-500 dark:text-gray-400 " @click="() => {
                                             const result = referralStore.redeemSubscriptionDiscount();
                                             showToast(result.message, result.success)
                                         }">
@@ -595,22 +597,22 @@
                                 <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-6 shadow-sm flex flex-col">
                                     <div class="flex items-center gap-2 mb-2">
                                         <div class="bg-yellow-50 dark:bg-yellow-500/10 rounded-lg p-2"><Landmark class="w-5 h-5 text-yellow-500" /></div>
-                                        <span class="font-semibold">Cash Withdrawal</span>
+                                        <span class="font-semibold text-gray-800 dark:text-gray-100">Cash Withdrawal</span>
                                     </div>
                                     <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">Reach 50 XPT and withdraw real money. Each token is worth ₦400. Minimum withdrawal is ₦20,000 at 50 XPT.</div>
                                     <div class="text-[#9E4CFF] text-xs font-semibold mb-2">Your balance is worth ₦{{ referralStore.withdrawableNaira.toLocaleString('en-NG') }}</div>
                                     <div v-if="referralStore.pendingWithdrawal" class="bg-yellow-50 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 rounded-lg px-4 py-2 text-xs font-semibold flex items-center gap-2 mb-2">
                                         <Info class="w-4 h-4" /> Withdrawal pending review
                                     </div>
-                                    <UButton v-if="referralStore.canWithdraw && !referralStore.pendingWithdrawal" color="primary" class="mt-2" @click="() => withdrawModalOpen = true">
+                                    <UButton v-if="referralStore.canWithdraw && !referralStore.pendingWithdrawal" color="primary" class="mt-2 " @click="() => withdrawModalOpen = true">
                                         Request Withdrawal
                                     </UButton>
-                                    <UButton v-else :disabled="true" class="mt-2">{{ referralStore.canWithdraw ? 'Pending Review' : referralStore.xptToWithdrawal + ' more XPT needed' }}</UButton>
+                                    <UButton v-else :disabled="true" class="text-gray-500 dark:text-gray-400  mt-2">{{ referralStore.canWithdraw ? 'Pending Review' : referralStore.xptToWithdrawal + ' more XPT needed' }}</UButton>
                                 </div>
                                 <div class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-6 shadow-sm flex flex-col">
-                                    <div class="flex items-center gap-2 mb-2">
+                                    <div class="flex items-center text-gray-800 dark:text-gray-100 gap-2 mb-2">
                                         <div class="bg-green-50 dark:bg-green-500/10 rounded-lg p-2"><Gift class="w-5 h-5 text-green-600 dark:text-green-400" /></div>
-                                        <span class="font-semibold">Free Referral Perks</span>
+                                        <span class="font-semibold text-gray-800 dark:text-gray-100 ">Free Referral Perks</span>
                                     </div>
                                     <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">Active when any referred user has an account, even on the free plan.</div>
                                     <div v-if="referralStore.freePerkActive" class="flex flex-wrap gap-2 mt-2">
@@ -720,7 +722,7 @@
                                         <tr v-for="w in referralStore.withdrawalHistory" :key="w.id" class="bg-white dark:bg-slate-900">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ new Date(w.requestedAt).toLocaleDateString('en-NG', { year: 'numeric', month: 'short', day: 'numeric' }) }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-[#9E4CFF]">{{ w.xptAmount }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold">₦{{ w.nairaAmount.toLocaleString('en-NG') }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-[#9E4CFF]">₦{{ w.nairaAmount.toLocaleString('en-NG') }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ w.paidAt ? new Date(w.paidAt).toLocaleDateString('en-NG', { year: 'numeric', month: 'short', day: 'numeric' }) : '-' }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <span v-if="w.status === 'paid'" class="bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 rounded-full px-2.5 py-0.5 text-xs font-semibold">Paid</span>

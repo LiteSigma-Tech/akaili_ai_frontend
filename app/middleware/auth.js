@@ -2,6 +2,8 @@
 import { useAuthStore } from '~/stores/authStore'
 import { useBusinessStore } from '~/stores/businessStore'
 
+const publicRoutes = ['/', '/login', '/register', '/about', '/contact', '/pricing', '/features', '/get-started', '/forgot-password', '/reset-password', '/terms']
+
 export default defineNuxtRouteMiddleware(async (to, from) => {
     // Only run on client side
     if (process.server) return
@@ -11,6 +13,11 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
     // Initialize auth from cookies
     // authStore.initializeAuth()
+
+    // Check if route is public
+    if (publicRoutes.includes(to.path)) {
+        return
+    }
 
     // If not authenticated, redirect to login
     if (!authStore.isLoggedIn) {

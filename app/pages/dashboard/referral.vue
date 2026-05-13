@@ -1,7 +1,7 @@
 <script setup>
 import { useReferralStore } from '~/stores/referralStore'
 import { useAuthStore } from '~/stores/authStore'
-import { Gift, Copy, Check, Share2, Users, Tag, Zap, BookOpen, Trophy, Info, Landmark } from 'lucide-vue-next'
+import { Gift, Copy, Check, Share2, Users, Tag, Zap, BookOpen, Trophy, Info, Landmark, Lock, ChevronLeft, ChevronRight, X } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'dashboard', middleware: 'auth' })
 useHead({ title: 'Referrals and Rewards | Xeliai' })
@@ -12,7 +12,12 @@ const authStore = useAuthStore()
 const toastVisible = ref(false)
 const toastMessage = ref('')
 const toastSuccess = ref(true)
+const discountModalOpen = ref(false)
+const perksModalOpen = ref(false)
 const withdrawModalOpen = ref(false)
+const discountStep = ref('confirm')
+const withdrawStep = ref('check')
+const discountConfirmed = ref(false)
 const bankDetails = reactive({ accountName: '', accountNumber: '', bankName: '' })
 const bankErrors = reactive({ accountName: '', accountNumber: '', bankName: '' })
 const copyState = ref(false)
@@ -31,7 +36,9 @@ function showToast(message, success = true) {
 }
 
 function handleCopy(code, type = 'code') {
-  navigator.clipboard.writeText(code)
+  if (process.client && navigator?.clipboard) {
+    navigator.clipboard.writeText(code)
+  }
   if (type === 'code') {
     copyState.value = true
     setTimeout(() => { copyState.value = false }, 2000)
@@ -39,6 +46,39 @@ function handleCopy(code, type = 'code') {
     copyShareState.value = true
     setTimeout(() => { copyShareState.value = false }, 2000)
   }
+}
+
+function redeemSubscriptionDiscount() {
+  const result = referralStore.redeemSubscriptionDiscount()
+  if (result.success) {
+    discountStep.value = 'success'
+  } else {
+    showToast(result.message, false)
+  }
+}
+
+function generateDiscountCodeFromCard() {
+  const result = referralStore.redeemSubscriptionDiscount()
+  showToast(result.message, result.success)
+}
+
+function openWithdrawalModal() {
+  withdrawModalOpen.value = true
+}
+
+function copyShareLinkAndClosePerks() {
+  handleCopy(shareUrl.value, 'share')
+  setTimeout(() => { perksModalOpen.value = false }, 1500)
+}
+
+function closeAllModals() {
+  discountModalOpen.value = false
+  withdrawModalOpen.value = false
+  perksModalOpen.value = false
+  discountStep.value = 'confirm'
+  withdrawStep.value = 'check'
+  discountConfirmed.value = false
+  Object.assign(bankDetails, { accountName: '', accountNumber: '', bankName: '' })
 }
 
 function handleWithdrawal() {
@@ -51,8 +91,20 @@ function handleWithdrawal() {
   if (!bankDetails.bankName.trim()) { bankErrors.bankName = 'Bank name is required'; valid = false }
   if (!valid) return
   const result = referralStore.requestWithdrawal({ ...bankDetails })
-  withdrawModalOpen.value = false
-  showToast(result.message, result.success)
+  if (result.success) {
+    withdrawStep.value = 'success'
+  } else {
+    showToast(result.message, false)
+  }
+}
+
+function handleDiscountRedeem() {
+  const result = referralStore.redeemSubscriptionDiscount()
+  if (result.success) {
+    discountStep.value = 'success'
+  } else {
+    showToast(result.message, false)
+  }
 }
 
 const xptHistoryWithBalance = computed(() => {
@@ -219,10 +271,7 @@ const refSections = [0, 80, 160, 240, 320, 400]
           </button>
         </div>
         <template v-else>
-          <UButton :disabled="referralStore.xptBalance < 15" color="primary" class="mt-2" @click="() => {
-            const result = referralStore.redeemSubscriptionDiscount();
-            showToast(result.message, result.success)
-          }">
+          <UButton :disabled="referralStore.xptBalance < 15" color="primary" class="mt-2" @click="generateDiscountCodeFromCard">
             Generate Discount Code
           </UButton>
         </template>
@@ -238,7 +287,7 @@ const refSections = [0, 80, 160, 240, 320, 400]
         <div v-if="referralStore.pendingWithdrawal" class="bg-yellow-50 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 rounded-lg px-4 py-2 text-xs font-semibold flex items-center gap-2 mb-2">
           <Info class="w-4 h-4" /> Withdrawal pending review
         </div>
-        <UButton v-if="referralStore.canWithdraw && !referralStore.pendingWithdrawal" color="primary" class="mt-2" @click="() => withdrawModalOpen = true">
+        <UButton v-if="referralStore.canWithdraw && !referralStore.pendingWithdrawal" color="primary" class="mt-2" @click="openWithdrawalModal">
           Request Withdrawal
         </UButton>
         <UButton v-else :disabled="true" class="mt-2">{{ referralStore.canWithdraw ? 'Pending Review' : referralStore.xptToWithdrawal + ' more XPT needed' }}</UButton>
@@ -262,34 +311,228 @@ const refSections = [0, 80, 160, 240, 320, 400]
     </div>
   </div>
 
-  <!-- Withdrawal Modal -->
-  <UModal v-model="withdrawModalOpen">
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-8 shadow-xl">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Withdrawal Request</h3>
-        <div class="mb-4 text-yellow-700 bg-yellow-50 dark:bg-yellow-500/10 rounded-lg px-4 py-2 text-xs">Bank details must match your account name. Processing takes 3 to 5 business days.</div>
-        <div class="mb-3">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Account Name</label>
-          <input v-model="bankDetails.accountName" type="text" class="w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white border-gray-300 text-gray-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
-          <div v-if="bankErrors.accountName" class="text-xs text-red-500 mt-1">{{ bankErrors.accountName }}</div>
-        </div>
-        <div class="mb-3">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Account Number</label>
-          <input v-model="bankDetails.accountNumber" type="text" maxlength="10" inputmode="numeric" class="w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white border-gray-300 text-gray-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
-          <div v-if="bankErrors.accountNumber" class="text-xs text-red-500 mt-1">{{ bankErrors.accountNumber }}</div>
-        </div>
-        <div class="mb-3">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bank Name</label>
-          <input v-model="bankDetails.bankName" type="text" class="w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white border-gray-300 text-gray-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
-          <div v-if="bankErrors.bankName" class="text-xs text-red-500 mt-1">{{ bankErrors.bankName }}</div>
-        </div>
-        <div class="flex justify-end gap-2 mt-6">
-          <UButton color="gray" @click="withdrawModalOpen = false">Cancel</UButton>
-          <UButton color="primary" @click="handleWithdrawal">Submit Request</UButton>
+  <Teleport to="body">
+    <Transition name="modal">
+      <div v-if="discountModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm" @click.self="discountModalOpen = false; discountStep = 'confirm'; discountConfirmed = false">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 border border-gray-200 dark:border-slate-700">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Subscription Discount</h3>
+            <button @click="discountModalOpen = false; discountStep = 'confirm'; discountConfirmed = false" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500"><X class="w-5 h-5" /></button>
+          </div>
+
+          <div v-if="discountStep === 'confirm' && referralStore.xptBalance < 15">
+            <div class="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 mb-4 text-sm text-red-700 dark:text-red-400">
+              You need 15 XPT to generate a discount code. You currently have <strong>{{ referralStore.xptBalance }} XPT</strong>.
+            </div>
+            <div class="mb-4">
+              <div class="flex justify-between text-xs text-gray-500 mb-1"><span>Progress</span><span>{{ referralStore.xptBalance }} / 15 XPT</span></div>
+              <div class="h-2 w-full rounded-full bg-gray-100 dark:bg-slate-700">
+                <div class="bg-[#9E4CFF] h-2 rounded-full transition-all duration-700" :style="{ width: Math.min(100, (referralStore.xptBalance / 15) * 100) + '%' }" />
+              </div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Keep referring users to earn more XPT. Each signup earns 2 XPT, each paid conversion earns 5 XPT.</p>
+            <button @click="discountModalOpen = false; discountStep = 'confirm'" class="w-full py-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-semibold text-sm hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">Close</button>
+          </div>
+
+          <div v-else-if="discountStep === 'confirm' && referralStore.xptBalance >= 15">
+            <div class="bg-gray-50 dark:bg-slate-800 rounded-xl px-4 py-3 mb-4 space-y-1 text-sm">
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Current XPT</span><span class="font-semibold">{{ referralStore.xptBalance }} XPT</span></div>
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Cost</span><span class="font-semibold text-red-500">- 15 XPT</span></div>
+              <div class="border-t border-gray-200 dark:border-slate-700 pt-1 flex justify-between"><span class="text-gray-500 dark:text-gray-400">Remaining after</span><span class="font-semibold">{{ referralStore.xptBalance - 15 }} XPT</span></div>
+            </div>
+            <label class="flex items-start gap-3 mb-4 cursor-pointer">
+              <input type="checkbox" v-model="discountConfirmed" class="mt-0.5 accent-purple-600" />
+              <span class="text-sm text-gray-700 dark:text-gray-300">I understand this will deduct 15 XPT from my balance</span>
+            </label>
+            <button
+              :disabled="!discountConfirmed"
+              @click="handleDiscountRedeem"
+              class="w-full py-2.5 rounded-xl font-semibold text-sm transition-colors mt-2"
+              :class="discountConfirmed ? 'bg-[#9E4CFF] text-white hover:bg-purple-700' : 'bg-gray-100 dark:bg-slate-800 text-gray-400 cursor-not-allowed'"
+              :aria-disabled="!discountConfirmed"
+            >
+              Generate Discount Code
+            </button>
+          </div>
+
+          <div v-else-if="discountStep === 'success'" class="text-center">
+            <div class="w-14 h-14 rounded-full bg-green-100 dark:bg-green-500/20 flex items-center justify-center mx-auto mb-4 pop-in">
+              <Check class="w-7 h-7 text-green-600 dark:text-green-400" />
+            </div>
+            <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Your Discount Code is Ready!</h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Apply this code at checkout. Valid for 30 days.</p>
+            <div class="flex items-center justify-between bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 mb-4">
+              <span class="font-mono text-lg font-bold text-gray-900 dark:text-white">{{ referralStore.generatedDiscountCode }}</span>
+              <button @click="handleCopy(referralStore.generatedDiscountCode, 'code')" class="flex items-center gap-1 text-[#9E4CFF] font-semibold text-sm">
+                <component :is="copyState ? Check : Copy" class="w-4 h-4" />
+                <span>{{ copyState ? 'Copied' : 'Copy' }}</span>
+              </button>
+            </div>
+            <button @click="discountModalOpen = false; discountStep = 'confirm'; discountConfirmed = false" class="w-full py-2.5 rounded-xl bg-[#9E4CFF] text-white font-semibold text-sm hover:bg-purple-700 transition-colors">Done</button>
+          </div>
         </div>
       </div>
-    </div>
-  </UModal>
+    </Transition>
+  </Teleport>
+
+  <Teleport to="body">
+    <Transition name="modal">
+      <div v-if="withdrawModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm" @click.self="withdrawModalOpen = false; withdrawStep = 'check'">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 border border-gray-200 dark:border-slate-700">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <button v-if="withdrawStep === 'form'" @click="withdrawStep = 'check'" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500"><ChevronLeft class="w-5 h-5" /></button>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ withdrawStep === 'form' ? 'Enter Bank Details' : withdrawStep === 'success' ? 'Request Submitted' : 'Cash Withdrawal' }}</h3>
+            </div>
+            <button @click="withdrawModalOpen = false; withdrawStep = 'check'" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500"><X class="w-5 h-5" /></button>
+          </div>
+
+          <div v-if="withdrawStep === 'check' && !referralStore.canWithdraw && !referralStore.pendingWithdrawal">
+            <div class="text-center mb-4">
+              <div class="text-4xl font-bold text-gray-900 dark:text-white mb-1">{{ referralStore.xptBalance }} <span class="text-xl font-semibold text-gray-400">/ 50 XPT</span></div>
+              <div class="h-2 w-full rounded-full bg-gray-100 dark:bg-slate-700 mt-3 mb-2">
+                <div class="bg-[#9E4CFF] h-2 rounded-full transition-all duration-700" :style="{ width: Math.min(100, (referralStore.xptBalance / 50) * 100) + '%' }" />
+              </div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">You need <strong>{{ referralStore.xptToWithdrawal }} more XPT</strong> to unlock withdrawal</p>
+            </div>
+            <div class="bg-gray-50 dark:bg-slate-800 rounded-xl px-4 py-3 mb-4 space-y-1 text-sm">
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Current worth</span><span class="font-semibold">₦{{ referralStore.withdrawableNaira.toLocaleString('en-NG') }}</span></div>
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Minimum threshold</span><span class="font-semibold">₦20,000 at 50 XPT</span></div>
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Rate</span><span class="font-semibold">₦400 per XPT</span></div>
+            </div>
+            <div class="bg-purple-50 dark:bg-purple-500/10 rounded-xl px-4 py-3 text-xs text-purple-700 dark:text-purple-400 mb-4">Signup referral = 2 XPT · Paid conversion = 5 XPT · Milestone bonus = 10 XPT</div>
+            <button @click="withdrawModalOpen = false" class="w-full py-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-semibold text-sm hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">Got it</button>
+          </div>
+
+          <div v-else-if="withdrawStep === 'check' && referralStore.pendingWithdrawal">
+            <div class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-3 mb-4 flex items-center gap-2 text-sm text-amber-700 dark:text-amber-400">
+              <Info class="w-4 h-4 shrink-0" /> You have a withdrawal currently under review.
+            </div>
+            <div v-for="w in referralStore.withdrawalHistory.filter(w => w.status === 'pending')" :key="w.id" class="bg-gray-50 dark:bg-slate-800 rounded-xl px-4 py-3 mb-3 text-sm space-y-1">
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Amount</span><span class="font-semibold text-[#9E4CFF]">{{ w.xptAmount }} XPT</span></div>
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Value</span><span class="font-semibold">₦{{ w.nairaAmount.toLocaleString('en-NG') }}</span></div>
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Requested</span><span>{{ new Date(w.requestedAt).toLocaleDateString('en-NG', { year: 'numeric', month: 'short', day: 'numeric' }) }}</span></div>
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Status</span><span class="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 rounded-full px-2 py-0.5 text-xs font-semibold">Pending</span></div>
+            </div>
+            <button @click="withdrawModalOpen = false" class="w-full py-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-semibold text-sm hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">Close</button>
+          </div>
+
+          <div v-else-if="withdrawStep === 'check' && referralStore.canWithdraw && !referralStore.pendingWithdrawal">
+            <div class="bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-800 rounded-xl px-4 py-4 mb-4 text-center">
+              <div class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ referralStore.xptBalance }} XPT</div>
+              <div class="text-lg font-semibold text-green-600 dark:text-green-400">₦{{ referralStore.withdrawableNaira.toLocaleString('en-NG') }}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Ready to withdraw</div>
+            </div>
+            <div class="bg-gray-50 dark:bg-slate-800 rounded-xl px-4 py-3 mb-4 space-y-1 text-sm">
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Rate</span><span class="font-semibold">₦400 per XPT</span></div>
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Processing time</span><span class="font-semibold">3 to 5 business days</span></div>
+            </div>
+            <button @click="withdrawStep = 'form'" class="w-full py-2.5 rounded-xl bg-[#9E4CFF] text-white font-semibold text-sm hover:bg-purple-700 transition-colors">Continue</button>
+          </div>
+
+          <div v-else-if="withdrawStep === 'form'">
+            <div class="bg-amber-50 dark:bg-amber-500/10 rounded-xl px-4 py-2 text-xs text-amber-700 dark:text-amber-400 mb-4">Bank details must match your account name. Processing takes 3 to 5 business days.</div>
+            <div class="mb-3">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Account Name</label>
+              <input v-model="bankDetails.accountName" type="text" class="w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white border-gray-300 text-gray-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
+              <div v-if="bankErrors.accountName" class="text-xs text-red-500 mt-1">{{ bankErrors.accountName }}</div>
+            </div>
+            <div class="mb-3">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Account Number</label>
+              <input v-model="bankDetails.accountNumber" type="text" maxlength="10" inputmode="numeric" class="w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white border-gray-300 text-gray-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
+              <div v-if="bankErrors.accountNumber" class="text-xs text-red-500 mt-1">{{ bankErrors.accountNumber }}</div>
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bank Name</label>
+              <input v-model="bankDetails.bankName" type="text" class="w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white border-gray-300 text-gray-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
+              <div v-if="bankErrors.bankName" class="text-xs text-red-500 mt-1">{{ bankErrors.bankName }}</div>
+            </div>
+            <div class="flex gap-2">
+              <button @click="withdrawStep = 'check'" class="flex-1 py-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-semibold text-sm hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">Back</button>
+              <button @click="handleWithdrawal" class="flex-1 py-2.5 rounded-xl bg-[#9E4CFF] text-white font-semibold text-sm hover:bg-purple-700 transition-colors">Submit Request</button>
+            </div>
+          </div>
+
+          <div v-else-if="withdrawStep === 'success'" class="text-center">
+            <div class="w-14 h-14 rounded-full bg-green-100 dark:bg-green-500/20 flex items-center justify-center mx-auto mb-4 pop-in">
+              <Check class="w-7 h-7 text-green-600 dark:text-green-400" />
+            </div>
+            <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Withdrawal Request Submitted</h4>
+            <div class="bg-gray-50 dark:bg-slate-800 rounded-xl px-4 py-3 mb-4 space-y-1 text-sm text-left mt-4">
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">XPT spent</span><span class="font-semibold">{{ referralStore.withdrawalHistory.at(-1)?.xptAmount ?? 0 }} XPT</span></div>
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Value</span><span class="font-semibold">₦{{ (referralStore.withdrawalHistory.at(-1)?.nairaAmount ?? 0).toLocaleString('en-NG') }}</span></div>
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Processing time</span><span class="font-semibold">3 to 5 business days</span></div>
+            </div>
+            <button @click="withdrawModalOpen = false; withdrawStep = 'check'" class="w-full py-2.5 rounded-xl bg-[#9E4CFF] text-white font-semibold text-sm hover:bg-purple-700 transition-colors">Done</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <Teleport to="body">
+    <Transition name="modal">
+      <div v-if="perksModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-sm" @click.self="perksModalOpen = false">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 border border-gray-200 dark:border-slate-700">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Free Referral Perks</h3>
+            <button @click="perksModalOpen = false" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500"><X class="w-5 h-5" /></button>
+          </div>
+
+          <div v-if="referralStore.freePerkActive">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-500/20 flex items-center justify-center">
+                <Check class="w-4 h-4 text-green-600 dark:text-green-400" />
+              </div>
+              <span class="font-semibold text-green-700 dark:text-green-400">Your Perks Are Active</span>
+            </div>
+            <div class="space-y-2 mb-4">
+              <div class="flex items-center gap-3 bg-green-50 dark:bg-green-500/10 rounded-xl px-4 py-3">
+                <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse shrink-0"></span>
+                <span class="text-sm font-semibold text-green-700 dark:text-green-400">+5 Daily Messages</span>
+              </div>
+              <div class="flex items-center gap-3 bg-green-50 dark:bg-green-500/10 rounded-xl px-4 py-3">
+                <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse shrink-0"></span>
+                <span class="text-sm font-semibold text-green-700 dark:text-green-400">+1 Team Seat</span>
+              </div>
+              <div class="flex items-center gap-3 bg-green-50 dark:bg-green-500/10 rounded-xl px-4 py-3">
+                <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse shrink-0"></span>
+                <span class="text-sm font-semibold text-green-700 dark:text-green-400">+1 Weekly Upload</span>
+              </div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Your {{ referralStore.totalReferrals }} referred user(s) are keeping your perks alive. Perks remain active as long as at least one referral has an account on any plan.</p>
+            <button @click="perksModalOpen = false" class="w-full py-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-semibold text-sm hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">Got it</button>
+          </div>
+
+          <div v-else>
+            <div class="space-y-2 mb-4">
+              <div class="flex items-center gap-3 bg-gray-100 dark:bg-slate-800 rounded-xl px-4 py-3">
+                <Lock class="w-4 h-4 text-gray-400 shrink-0" />
+                <span class="text-sm font-semibold text-gray-400">+5 Daily Messages</span>
+              </div>
+              <div class="flex items-center gap-3 bg-gray-100 dark:bg-slate-800 rounded-xl px-4 py-3">
+                <Lock class="w-4 h-4 text-gray-400 shrink-0" />
+                <span class="text-sm font-semibold text-gray-400">+1 Team Seat</span>
+              </div>
+              <div class="flex items-center gap-3 bg-gray-100 dark:bg-slate-800 rounded-xl px-4 py-3">
+                <Lock class="w-4 h-4 text-gray-400 shrink-0" />
+                <span class="text-sm font-semibold text-gray-400">+1 Weekly Upload</span>
+              </div>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Refer at least one person (any plan) to activate these perks instantly.</p>
+            <div class="flex items-center gap-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 mb-4">
+              <span class="font-mono text-xs text-gray-900 dark:text-white truncate">{{ shareUrl }}</span>
+              <button @click="handleCopy(shareUrl, 'share')" class="flex items-center gap-1 text-[#9E4CFF] font-semibold text-sm shrink-0">
+                <component :is="copyShareState ? Check : Copy" class="w-4 h-4" />
+                <span>{{ copyShareState ? 'Copied' : 'Copy' }}</span>
+              </button>
+            </div>
+            <button @click="copyShareLinkAndClosePerks" class="w-full py-2.5 rounded-xl bg-[#9E4CFF] text-white font-semibold text-sm hover:bg-purple-700 transition-colors">Copy My Link</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 
   <!-- Section 7: Referrals table -->
   <div class="overflow-x-auto rounded-2xl border border-gray-200 dark:border-slate-800 mt-8 ref-enter" :style="{ animationDelay: refSections[0] + 'ms' }">
@@ -433,4 +676,8 @@ const refSections = [0, 80, 160, 240, 320, 400]
 @keyframes ref-rise {
   to { opacity: 1; transform: translateY(0); }
 }
+.modal-enter-active, .modal-leave-active { transition: all 0.25s ease; }
+.modal-enter-from, .modal-leave-to { opacity: 0; transform: scale(0.95); }
+@keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 </style>
