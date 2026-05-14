@@ -60,7 +60,7 @@
           <NuxtLink to="/contact" class="text-[#9CA3AF] hover:text-gray-200">Help Center</NuxtLink>
           <NuxtLink to="/contact" class="text-[#9CA3AF] hover:text-gray-200">Contact</NuxtLink>
           <NuxtLink to="/privacy" class="text-[#9CA3AF] hover:text-gray-200">Privacy Policy</NuxtLink>
-          <NuxtLink to="/terms" class="text-[#9CA3AF] hover:text-gray-200">Terms of Servi</NuxtLink>
+          <NuxtLink to="/terms" class="text-[#9CA3AF] hover:text-gray-200">Terms of Service</NuxtLink>
         </nav>
       </div>
     </div>
