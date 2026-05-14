@@ -59,8 +59,8 @@
         <nav class="flex flex-col space-y-2 text-sm">
           <NuxtLink to="/contact" class="text-[#9CA3AF] hover:text-gray-200">Help Center</NuxtLink>
           <NuxtLink to="/contact" class="text-[#9CA3AF] hover:text-gray-200">Contact</NuxtLink>
-          <NuxtLink to="/privacy" class="text-[#9CA3AF] hover:text-gray-200">Privacy</NuxtLink>
-          <NuxtLink to="/terms" class="text-[#9CA3AF] hover:text-gray-200">Terms</NuxtLink>
+          <NuxtLink to="/privacy" class="text-[#9CA3AF] hover:text-gray-200">Privacy Policy</NuxtLink>
+          <NuxtLink to="/terms" class="text-[#9CA3AF] hover:text-gray-200">Terms of Servi</NuxtLink>
         </nav>
       </div>
     </div>
