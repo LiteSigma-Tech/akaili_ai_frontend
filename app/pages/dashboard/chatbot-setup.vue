@@ -126,7 +126,8 @@
 <script setup>
 
 definePageMeta({
-    'layout': 'dashboard'
+  layout: 'dashboard',
+  middleware: ['auth']
 })
 
 import { ref, reactive, onMounted, computed, provide, readonly } from 'vue' // Added missing imports

@@ -833,7 +833,8 @@ import CancelSubscriptionModal from '~/components/settings/CancelSubscriptionMod
 import BillingHistory from '~/components/payments/BillingHistory.vue'
 
 definePageMeta({
-    layout: 'dashboard'
+  layout: 'dashboard',
+  middleware: ['auth']
 })
 
 const { industries } = useIndustryOptions()

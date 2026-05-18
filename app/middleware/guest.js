@@ -14,6 +14,10 @@ export default defineNuxtRouteMiddleware((to, from) => {
     if (authStore.isLoggedIn) {
         const user = authStore.user
 
+        // Guard: isLoggedIn can be true while user is still null (auth plugin race).
+        // Fall through to let the page load rather than crashing with a TypeError.
+        if (!user) return
+
         // If onboarding not completed, go to onboarding
         if (!user.onboarding_completed) {
             return navigateTo('/dashboard/onboarding')

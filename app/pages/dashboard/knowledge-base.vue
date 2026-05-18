@@ -213,7 +213,8 @@ import ActionToast from '~/components/ActionToast.vue'
 import BaseModal from '~/components/BaseModal.vue'
 
 definePageMeta({
-    layout: 'dashboard'
+  layout: 'dashboard',
+  middleware: ['auth']
 })
 
 const faqStore = useFAQStore()

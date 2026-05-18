@@ -1,6 +1,4 @@
 <!-- app/error.vue -->
-<!-- Item 11: Nuxt 3 global error page. Handles all unhandled errors (404, 500+).
-     Replaces Nuxt's raw default screen which exposed the framework name and version. -->
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-slate-950 flex flex-col items-center justify-center px-4 transition-colors duration-300">
 
@@ -44,10 +42,21 @@
           </svg>
         </div>
         <p class="text-6xl font-extrabold text-red-500 mb-3">{{ error.statusCode || 500 }}</p>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">Something went wrong</h1>
-        <p class="text-gray-500 dark:text-gray-400 text-sm mb-8">
-          We hit an unexpected error. Our team has been notified. Please try again in a moment.
-        </p>
+
+        <!-- Friendlier message when a stale/reused verification link triggers the error -->
+        <template v-if="isVerificationError">
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">Link already used</h1>
+          <p class="text-gray-500 dark:text-gray-400 text-sm mb-8">
+            This verification link has already been used or has expired.
+            Your email is already verified — please log in to continue.
+          </p>
+        </template>
+        <template v-else>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">Something went wrong</h1>
+          <p class="text-gray-500 dark:text-gray-400 text-sm mb-8">
+            We hit an unexpected error. Our team has been notified. Please try again in a moment.
+          </p>
+        </template>
       </template>
 
       <!-- Actions -->
@@ -57,9 +66,9 @@
           class="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#9E4CFF] hover:bg-purple-700 text-white font-semibold rounded-xl transition-colors text-sm"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
           </svg>
-          Back to Dashboard
+          Go to Login
         </button>
         <NuxtLink
           to="/"
@@ -86,5 +95,17 @@ const props = defineProps({
   }
 })
 
-const handleError = () => clearError({ redirect: '/dashboard' })
+// Detect when a 500 was caused by clicking an already-used verification link.
+// The backend throws when it finds email_verified_at is already set and the
+// token is consumed — the URL always contains /verify-email or /auth/verify.
+const isVerificationError = computed(() => {
+  if (props.error.statusCode !== 500) return false
+  const url = props.error.url || ''
+  return url.includes('verify-email') || url.includes('/auth/verify')
+})
+
+// Always redirect to /login — never to /dashboard — so that:
+//   1. Users who just hit a stale verification link land on a page they can act on.
+//   2. Users who have not completed onboarding cannot bypass it via the error page.
+const handleError = () => clearError({ redirect: '/login' })
 </script>

@@ -313,7 +313,10 @@ import { ref, onMounted, reactive, computed, nextTick } from 'vue'
 import { useTeamStore } from '~/stores/teamStore'
 import BaseModal from '~/components/BaseModal.vue'
 
-definePageMeta({ layout: 'dashboard' })
+definePageMeta({
+  layout: 'dashboard',
+  middleware: ['auth']
+})
 
 const teamStore = useTeamStore()
 const successMessage = ref('')
