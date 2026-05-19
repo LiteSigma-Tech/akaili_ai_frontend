@@ -85,45 +85,49 @@
                   </p>
                 </div>
 
-                <!-- Payment Provider Selection -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Payment Method</label>
-                  <div class="grid grid-cols-2 gap-4">
-                    <button type="button" @click="selectedProvider = 'stripe'" :class="[
-                      'p-4 border-2 rounded-xl transition-all flex items-center justify-center gap-2',
-                      selectedProvider === 'stripe'
-                        ? 'border-[#9E4CFF] bg-purple-50 dark:bg-purple-900/20'
-                        : 'border-gray-300 dark:border-slate-700 hover:border-gray-400'
-                    ]">
-                      <span class="font-semibold text-gray-900 dark:text-white">Stripe</span>
-                      <span class="text-xs text-gray-500">(Card)</span>
+                <!-- Payment Summary (provider + currency) -->
+                <div
+                  class="bg-gray-50 dark:bg-slate-800/60 rounded-xl px-5 py-4 flex items-center justify-between gap-4">
+                  <p class="text-sm text-gray-700 dark:text-gray-300 leading-tight">
+                    Paying with
+                    <span class="font-semibold text-gray-900 dark:text-white capitalize">{{ selectedProvider }}</span>
+                    in
+                    <span class="font-semibold text-gray-900 dark:text-white">{{ selectedCurrency }}</span>
+                  </p>
+
+                  <!-- Currency popover anchor -->
+                  <div class="relative shrink-0" ref="currencyPopoverRef">
+                    <button type="button" @click.stop="showCurrencyPopover = !showCurrencyPopover"
+                      class="text-xs text-[#9E4CFF] hover:text-purple-700 dark:hover:text-purple-400 font-medium underline underline-offset-2 transition-colors whitespace-nowrap">
+                      Paying from another country?
                     </button>
 
-                    <button type="button" @click="selectedProvider = 'paystack'" :class="[
-                      'p-4 border-2 rounded-xl transition-all flex items-center justify-center gap-2',
-                      selectedProvider === 'paystack'
-                        ? 'border-[#9E4CFF] bg-purple-50 dark:bg-purple-900/20'
-                        : 'border-gray-300 dark:border-slate-700 hover:border-gray-400'
-                    ]">
-                      <span class="font-semibold text-gray-900 dark:text-white">Paystack</span>
-                      <span class="text-xs text-gray-500">(Card/Bank)</span>
-                    </button>
+                    <!-- Compact currency popover -->
+                    <div v-if="showCurrencyPopover"
+                      class="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 z-50 overflow-hidden">
+                      <div class="px-4 py-2.5 border-b border-gray-100 dark:border-slate-700">
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                          Select currency
+                        </p>
+                      </div>
+                      <div v-if="currencyOverrideLoading" class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                        Updating...
+                      </div>
+                      <ul v-else class="py-1 max-h-60 overflow-y-auto">
+                        <li v-for="cur in availableCurrencies" :key="cur.code">
+                          <button type="button" @click.stop="selectCurrency(cur.code)" :class="[
+                            'w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between gap-2',
+                            cur.code === selectedCurrency
+                              ? 'bg-purple-50 dark:bg-purple-900/20 text-[#9E4CFF] font-semibold'
+                              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800'
+                          ]">
+                            <span class="font-medium">{{ cur.code }}</span>
+                            <span class="text-xs text-gray-400 dark:text-gray-500 truncate">{{ cur.name }}</span>
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
-                </div>
-
-                <!-- Currency Selection -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Currency</label>
-                  <select v-model="selectedCurrency"
-                    class="w-full px-4 py-3.5 rounded-xl border border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#9E4CFF] outline-none transition-all">
-                    <option value="USD">USD - US Dollar</option>
-                    <option value="NGN">NGN - Nigerian Naira</option>
-                    <option value="GBP">GBP - British Pound</option>
-                    <option value="EUR">EUR - Euro</option>
-                    <option value="GHS">GHS - Ghanaian Cedi</option>
-                    <option value="KES">KES - Kenyan Shilling</option>
-                    <option value="ZAR">ZAR - South African Rand</option>
-                  </select>
                 </div>
 
                 <div class="pt-4">
@@ -132,7 +136,8 @@
 
                     <svg v-if="loading" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
                       fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                      </circle>
                       <path class="opacity-75" fill="currentColor"
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                       </path>
@@ -184,7 +189,7 @@
               </div>
               <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                 <span>Tax (0%)</span>
-                <span class="font-medium">$0.00</span>
+                <span class="font-medium">—</span>
               </div>
             </div>
 
@@ -216,7 +221,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, reactive } from 'vue'
+import { computed, ref, onMounted, onUnmounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/authStore'
 import { useSubscriptionStore } from '~/stores/subscriptionStore'
@@ -235,6 +240,12 @@ const loading = ref(false)
 const isLoggedIn = computed(() => authStore.isLoggedIn)
 const selectedProvider = ref('stripe')
 const selectedCurrency = ref('USD')
+const plansData = ref(null)
+const showCurrencyPopover = ref(false)
+const currencyOverrideLoading = ref(false)
+const currencyPopoverRef = ref(null)
+
+const overrideCookie = useCookie('pricing.override.currency', { maxAge: 60 * 60 * 24 * 30 })
 
 const billingForm = reactive({
   firstName: '',
@@ -242,37 +253,54 @@ const billingForm = reactive({
   email: ''
 })
 
-const plans = {
-  professional: {
-    name: 'Professional',
-    features: ['5 Chatbots', 'Advanced Analytics', 'Priority Support', 'Database Integrations']
-  },
-  enterprise: {
-    name: 'Enterprise',
-    features: ['Unlimited Chatbots', 'Custom Analytics', '24/7 Phone Support', 'Advanced Security']
-  },
-  starter: {
-    name: 'Starter',
-    features: ['1 Chatbot', 'Basic Analytics', 'Email Support']
-  },
-  default: {
-    name: 'Professional',
-    features: ['5 Chatbots', 'Advanced Analytics', 'Priority Support']
-  }
+const STATIC_PLANS = {
+  professional: { name: 'Professional', features: ['5 Chatbots', 'Advanced Analytics', 'Priority Support', 'Database Integrations'] },
+  enterprise: { name: 'Enterprise', features: ['Unlimited Chatbots', 'Custom Analytics', '24/7 Phone Support', 'Advanced Security'] },
+  starter: { name: 'Starter', features: ['1 Chatbot', 'Basic Analytics', 'Email Support'] },
 }
 
-const selectedPlan = computed(() => plans[route.query.plan] || plans.default)
+const STATIC_PRICES = {
+  professional: { USD: '$99.00', NGN: '₦150,000', GBP: '£79.00', EUR: '€89.00' },
+  enterprise: { USD: '$299.00', NGN: '₦450,000', GBP: '£239.00', EUR: '€269.00' },
+  starter: { USD: 'Free' },
+}
+
+const CURRENCY_NAMES = {
+  USD: 'US Dollar', NGN: 'Nigerian Naira', GBP: 'British Pound',
+  EUR: 'Euro', GHS: 'Ghanaian Cedi', KES: 'Kenyan Shilling', ZAR: 'South African Rand',
+}
+
+const availableCurrencies = computed(() => {
+  const codes = Array.isArray(plansData.value?.available_currencies) && plansData.value.available_currencies.length
+    ? plansData.value.available_currencies
+    : ['USD', 'NGN', 'GBP', 'EUR', 'GHS', 'KES', 'ZAR']
+  return codes.map(code => ({ code, name: CURRENCY_NAMES[code] || code }))
+})
+
+const selectedPlan = computed(() => {
+  const planId = route.query.plan || 'professional'
+  if (plansData.value?.plans) {
+    const found = plansData.value.plans.find(p => p.id === planId)
+    if (found) {
+      return {
+        name: found.name,
+        features: Array.isArray(found.features) && found.features.length
+          ? found.features
+          : (STATIC_PLANS[planId]?.features ?? []),
+      }
+    }
+  }
+  return STATIC_PLANS[planId] ?? STATIC_PLANS.professional
+})
 
 const formattedPrice = computed(() => {
-  // This will be dynamically fetched from API in real implementation
-  const prices = {
-    professional: { USD: '$99.00', NGN: '₦150,000', GBP: '£79.00', EUR: '€89.00' },
-    enterprise: { USD: '$299.00', NGN: '₦450,000', GBP: '£239.00', EUR: '€269.00' },
-    starter: { USD: 'Free', NGN: 'Free', GBP: 'Free', EUR: 'Free' }
-  }
-
   const planId = route.query.plan || 'professional'
-  return prices[planId]?.[selectedCurrency.value] || prices.professional.USD
+  if (plansData.value?.plans) {
+    const found = plansData.value.plans.find(p => p.id === planId)
+    if (found?.is_free) return 'Free'
+    if (found?.price?.formatted) return found.price.formatted
+  }
+  return STATIC_PRICES[planId]?.[selectedCurrency.value] ?? STATIC_PRICES.professional?.USD ?? '$99.00'
 })
 
 const isPlanAlreadyActive = computed(() => {
@@ -292,13 +320,47 @@ const goBack = () => {
   }
 }
 
+const selectCurrency = async (code) => {
+  showCurrencyPopover.value = false
+  if (code === selectedCurrency.value) return
+
+  currencyOverrideLoading.value = true
+  try {
+    const ctx = await $fetch(`${config.public.apiBase}/api/pricing/context`, {
+      query: { currency: code }
+    })
+    if (ctx?.success && ctx?.data) {
+      selectedCurrency.value = ctx.data.currency
+      selectedProvider.value = ctx.data.provider
+    } else {
+      selectedCurrency.value = code
+    }
+    overrideCookie.value = selectedCurrency.value
+
+    // Refetch plan list so price display reflects the chosen currency
+    const plans = await $fetch(`${config.public.apiBase}/api/plans`, {
+      query: { currency: selectedCurrency.value }
+    })
+    if (plans?.success && plans?.data) plansData.value = plans.data
+  } catch (e) {
+    console.warn('[CHECKOUT] currency override fetch failed', e)
+    selectedCurrency.value = code
+    overrideCookie.value = code
+  } finally {
+    currencyOverrideLoading.value = false
+  }
+}
+
+const handleClickOutside = (event) => {
+  if (currencyPopoverRef.value && !currencyPopoverRef.value.contains(event.target)) {
+    showCurrencyPopover.value = false
+  }
+}
+
 const handlePayment = async () => {
   loading.value = true
-
   try {
     const planId = route.query.plan || 'professional'
-
-    // Call backend to create checkout session
     const response = await $fetch(`${config.public.apiBase}/api/payment/checkout`, {
       method: 'POST',
       headers: {
@@ -311,9 +373,7 @@ const handlePayment = async () => {
         provider: selectedProvider.value
       }
     })
-
     if (response.success) {
-      // Redirect to payment provider's checkout page
       window.location.href = response.data.checkout_url
     }
   } catch (error) {
@@ -325,22 +385,39 @@ const handlePayment = async () => {
 }
 
 onMounted(async () => {
-  // Ensure subscription store is loaded
+  document.addEventListener('click', handleClickOutside)
+
   await subscriptionStore.fetchSubscription()
 
-  // Prefill form with user data
   if (authStore.user) {
     billingForm.email = authStore.user.email
     const names = (authStore.user.name || '').trim().split(' ')
-    if (names.length > 0) {
-      billingForm.firstName = names[0]
-      billingForm.lastName = names.slice(1).join(' ') || ''
-    }
+    billingForm.firstName = names[0] || ''
+    billingForm.lastName = names.slice(1).join(' ') || ''
   }
 
-  // Set currency from query or detect
-  if (route.query.currency) {
-    selectedCurrency.value = route.query.currency
+  // Priority: explicit query param > persisted cookie > API geo-detect
+  const startCurrency = route.query.currency || overrideCookie.value || null
+
+  try {
+    const response = await $fetch(`${config.public.apiBase}/api/plans`, {
+      query: startCurrency ? { currency: startCurrency } : {}
+    })
+    if (response?.success && response?.data) {
+      plansData.value = response.data
+      const rec = response.data.recommended
+      if (rec) {
+        selectedCurrency.value = rec.currency
+        selectedProvider.value = rec.provider
+      }
+    }
+  } catch (e) {
+    console.warn('[CHECKOUT] /api/plans fetch failed; using static fallback', e)
+    if (startCurrency) selectedCurrency.value = startCurrency
   }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
