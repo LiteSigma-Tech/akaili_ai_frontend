@@ -440,6 +440,20 @@
                             <p class="text-gray-500 dark:text-gray-400 mt-1">Track referrals, earn XPT tokens, and redeem rewards.</p>
                         </div>
 
+                        <!-- Blocking error banner (Q8): shows when the dashboard fetch failed.
+                             Transient action errors stay on the existing toast pattern below. -->
+                        <div v-if="referralStore.error && !referralStore.lastFetchedAt" class="mb-6 rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/30 dark:border-red-800 p-4 flex items-center justify-between gap-4">
+                            <p class="text-sm text-red-900 dark:text-red-100">{{ referralStore.error }}</p>
+                            <button type="button" @click="referralStore.fetchDashboard()" class="text-sm font-semibold text-red-900 dark:text-red-100 underline">Retry</button>
+                        </div>
+
+                        <!-- First-load skeleton (Q8): only shown while loading and we have no payload yet. -->
+                        <div v-if="referralStore.loading && !referralStore.lastFetchedAt" class="mb-6 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 animate-pulse">
+                            <div class="h-8 w-40 bg-gray-200 dark:bg-slate-700 rounded mb-4"></div>
+                            <div class="h-4 w-72 bg-gray-200 dark:bg-slate-700 rounded mb-2"></div>
+                            <div class="h-4 w-56 bg-gray-200 dark:bg-slate-700 rounded"></div>
+                        </div>
+
                         <div ref="xptWalletRef" class="relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-6 shadow-sm mb-6 grid grid-cols-1 lg:grid-cols-3 gap-6 transition-all duration-500 ease-out opacity-0 translate-y-6" :class="sectionVisible[0] ? 'opacity-100 translate-y-0' : ''" :style="{ animationDelay: refSections[1] + 'ms' }">
                             <div class="absolute inset-0 pointer-events-none overflow-hidden">
                                 <span class="absolute top-4 left-10 w-24 h-24 rounded-full bg-purple-200/40 dark:bg-purple-500/10 blur-2xl bubble-float"></span>
@@ -756,7 +770,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="(e, index) in xptHistoryWithBalance" :key="index" class="bg-white dark:bg-slate-900">
+                                        <tr v-for="e in xptHistoryWithBalance" :key="e.transaction_id" class="bg-white dark:bg-slate-900">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ new Date(e.date).toLocaleDateString('en-NG', { year: 'numeric', month: 'short', day: 'numeric' }) }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ e.reason }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold" :class="e.amount > 0 ? 'text-[#9E4CFF]' : 'text-red-400'">{{ e.amount > 0 ? '+' : '' }}{{ e.amount }} XPT</td>
@@ -828,7 +842,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '~/stores/authStore'
 import { useUserStore } from '~/stores/userStore'
@@ -1049,7 +1063,10 @@ const xptHistoryWithBalance = computed(() => {
     return sorted.map(e => { running += e.amount; return { ...e, balanceAfter: running } }).reverse()
 })
 
-const shareUrl = computed(() => referralStore.referralCode ? `https://xeliai.com/register?ref=${referralStore.referralCode}` : '')
+const shareUrl = computed(() =>
+    referralStore.shareUrl ||
+    (referralStore.referralCode ? `https://xeliai.com/register?ref=${referralStore.referralCode}` : '')
+)
 
 const initializeForms = async () => {
     profileForm.value = { name: authStore.user?.name || '' }
@@ -1318,9 +1335,27 @@ const formatDate = (dateString) => {
     })
 }
 
+// Fetch the referral dashboard once when the referrals tab is the active one,
+// or lazily on first switch into it. Avoids paying the round-trip for users
+// who only visit the profile / business / subscription / billing tabs.
+async function ensureReferralDataLoaded() {
+    if (referralStore.lastFetchedAt) return
+    if (!authStore.isLoggedIn || !authStore.token) return
+    await referralStore.fetchDashboard()
+}
+
+watch(activeTab, async (next) => {
+    if (next === 'referrals') {
+        await ensureReferralDataLoaded()
+    }
+})
+
 onMounted(async () => {
     await initializeForms()
     await subscriptionStore.fetchSubscription()
+    if (activeTab.value === 'referrals') {
+        await ensureReferralDataLoaded()
+    }
     useFadeInOnScroll([xptWalletRef, statsRowRef, referralCodeRef, milestoneRef, referralHistoryRef, xptLedgerRef])
 })
 </script>
