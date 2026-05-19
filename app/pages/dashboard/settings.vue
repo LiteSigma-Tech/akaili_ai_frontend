@@ -600,8 +600,8 @@
                                         </button>
                                     </div>
                                          <template v-else>
-                                        <UButton :disabled="referralStore.xptBalance < referralStore.economy.discountCostXpt" color="primary" class="mt-2 text-gray-500 dark:text-gray-400 " @click="() => {
-                                            const result = referralStore.redeemSubscriptionDiscount();
+                                        <UButton :disabled="referralStore.xptBalance < referralStore.economy.discountCostXpt" color="primary" class="mt-2 text-gray-500 dark:text-gray-400 " @click="async () => {
+                                            const result = await referralStore.redeemSubscriptionDiscount();
                                             showToast(result.message, result.success)
                                         }">
                                             Generate Discount Code
@@ -1026,7 +1026,7 @@ function handleCopy(code, type = 'code') {
     }
 }
 
-function handleWithdrawal() {
+async function handleWithdrawal() {
     bankErrors.accountName = ''
     bankErrors.accountNumber = ''
     bankErrors.bankName = ''
@@ -1046,7 +1046,7 @@ function handleWithdrawal() {
     if (!/^\d{10}$/.test(bankDetails.accountNumber)) { bankErrors.accountNumber = 'Enter a valid 10-digit account number'; valid = false }
     if (!bankDetails.bankName.trim()) { bankErrors.bankName = 'Bank name is required'; valid = false }
     if (!valid) return
-    const result = referralStore.requestWithdrawal({ ...bankDetails }, amount)
+    const result = await referralStore.requestWithdrawal({ ...bankDetails }, amount)
     withdrawModalOpen.value = false
     showToast(result.message, result.success)
 }
