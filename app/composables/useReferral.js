@@ -1,28 +1,11 @@
 // composables/useReferral.js
-// Thin composable that exposes the referral store and bootstraps the referral
-// code as soon as the user is available.  Import this in the dashboard layout
-// (or any page) to guarantee the store is always initialised.
-import { watch, onMounted } from 'vue'
+// Thin wrapper that exposes referral store state to dashboard components.
+// Phase 3 will replace this with an onMounted -> store.fetchDashboard() call.
+import { computed } from 'vue'
 import { useReferralStore } from '~/stores/referralStore'
-import { useAuthStore } from '~/stores/authStore'
 
 export function useReferral() {
   const referralStore = useReferralStore()
-  const authStore = useAuthStore()
-
-  // Generate the user's unique referral code if it hasn't been created yet.
-  // Safe to call multiple times — the store action is idempotent.
-  function initCode() {
-    const username = authStore.user?.name
-    if (username) {
-      referralStore.generateCode(username)
-    }
-  }
-
-  onMounted(initCode)
-
-  // Re-init if the user object becomes available after mount (e.g. SSR hydration).
-  watch(() => authStore.user, initCode)
 
   return {
     referralStore,

@@ -19,14 +19,11 @@ const discountStep = ref('confirm')
 const withdrawStep = ref('check')
 const discountConfirmed = ref(false)
 const bankDetails = reactive({ accountName: '', accountNumber: '', bankName: '' })
-const bankErrors = reactive({ accountName: '', accountNumber: '', bankName: '' })
+const bankErrors = reactive({ accountName: '', accountNumber: '', bankName: '', amount: '' })
+const withdrawalAmount = ref(referralStore.economy.withdrawalMinXpt)
 const copyState = ref(false)
 const copyShareState = ref(false)
 const milestoneDots = [33, 66, 100]
-
-onMounted(() => {
-  referralStore.generateCode(authStore.user?.name ?? 'user')
-})
 
 function showToast(message, success = true) {
   toastMessage.value = message
@@ -79,18 +76,31 @@ function closeAllModals() {
   withdrawStep.value = 'check'
   discountConfirmed.value = false
   Object.assign(bankDetails, { accountName: '', accountNumber: '', bankName: '' })
+  Object.assign(bankErrors, { accountName: '', accountNumber: '', bankName: '', amount: '' })
+  withdrawalAmount.value = referralStore.economy.withdrawalMinXpt
 }
 
 function handleWithdrawal() {
   bankErrors.accountName = ''
   bankErrors.accountNumber = ''
   bankErrors.bankName = ''
+  bankErrors.amount = ''
   let valid = true
+  const min = referralStore.economy.withdrawalMinXpt
+  const max = referralStore.xptBalance
+  const amount = Number(withdrawalAmount.value)
+  if (!Number.isFinite(amount) || amount < min) {
+    bankErrors.amount = `Minimum withdrawal is ${min} XPT`
+    valid = false
+  } else if (amount > max) {
+    bankErrors.amount = `You only have ${max} XPT available`
+    valid = false
+  }
   if (!bankDetails.accountName.trim()) { bankErrors.accountName = 'Account name is required'; valid = false }
   if (!/^\d{10}$/.test(bankDetails.accountNumber)) { bankErrors.accountNumber = 'Enter a valid 10-digit account number'; valid = false }
   if (!bankDetails.bankName.trim()) { bankErrors.bankName = 'Bank name is required'; valid = false }
   if (!valid) return
-  const result = referralStore.requestWithdrawal({ ...bankDetails })
+  const result = referralStore.requestWithdrawal({ ...bankDetails }, amount)
   if (result.success) {
     withdrawStep.value = 'success'
   } else {
@@ -113,7 +123,7 @@ const xptHistoryWithBalance = computed(() => {
   return sorted.map(e => { running += e.amount; return { ...e, balanceAfter: running } }).reverse()
 })
 
-const shareUrl = computed(() => `https://xeliai.com/register?ref=${referralStore.referralCode}`)
+const shareUrl = computed(() => referralStore.referralCode ? `https://xeliai.com/register?ref=${referralStore.referralCode}` : '')
 
 const refSections = [0, 80, 160, 240, 320, 400]
 </script>
@@ -145,10 +155,10 @@ const refSections = [0, 80, 160, 240, 320, 400]
       <div class="text-gray-400 text-sm mb-2">Referral Tokens</div>
       <div v-if="!referralStore.canWithdraw">
         <div class="flex justify-between text-xs text-gray-500 mb-1">
-          <span>{{ referralStore.xptBalance }} of 50 XPT to withdrawal threshold</span>
+          <span>{{ referralStore.xptBalance }} of {{ referralStore.economy.withdrawalMinXpt }} XPT to withdrawal threshold</span>
         </div>
         <div class="h-2 w-full rounded-full bg-gray-100 dark:bg-slate-700">
-          <div class="bg-[#9E4CFF] h-2 rounded-full transition-all duration-700" :style="{ width: Math.min(100, (referralStore.xptBalance / 50) * 100) + '%' }" />
+          <div class="bg-[#9E4CFF] h-2 rounded-full transition-all duration-700" :style="{ width: Math.min(100, (referralStore.xptBalance / referralStore.economy.withdrawalMinXpt) * 100) + '%' }" />
         </div>
       </div>
       <div v-else class="mt-2">
@@ -196,9 +206,9 @@ const refSections = [0, 80, 160, 240, 320, 400]
     <div class="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 shadow-sm flex items-center gap-4">
       <Tag class="w-7 h-7 text-yellow-500" />
       <div>
-        <div class="text-2xl font-bold">{{ referralStore.pendingDiscount }}</div>
+        <div class="text-2xl font-bold">{{ referralStore.generatedDiscountCode ? 1 : 0 }}</div>
         <div class="text-xs text-gray-500 mt-1">Discounts Queued</div>
-        <div class="text-xs text-gray-400">10 percent each</div>
+        <div class="text-xs text-gray-400">{{ referralStore.economy.discountPercent }} percent each</div>
       </div>
     </div>
   </div>
@@ -232,10 +242,10 @@ const refSections = [0, 80, 160, 240, 320, 400]
         <Trophy class="w-5 h-5 text-[#9E4CFF]" />
         <span class="font-semibold">Milestone Progress</span>
       </div>
-      <span class="text-xs text-gray-500">{{ referralStore.milestoneProgress }} of 3 paid referrals</span>
+      <span class="text-xs text-gray-500">{{ referralStore.milestoneProgress }} of {{ referralStore.economy.milestoneEvery }} paid referrals</span>
     </div>
     <div class="h-2 w-full rounded-full bg-gray-100 dark:bg-slate-700 mb-3 relative">
-      <div class="bg-[#9E4CFF] h-2 rounded-full transition-all duration-700" :style="{ width: Math.min(100, (referralStore.milestoneProgress / 3) * 100) + '%' }" />
+      <div class="bg-[#9E4CFF] h-2 rounded-full transition-all duration-700" :style="{ width: Math.min(100, (referralStore.milestoneProgress / referralStore.economy.milestoneEvery) * 100) + '%' }" />
       <template v-for="(dot, i) in milestoneDots" :key="i">
         <div :style="{ left: dot + '%' }" class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white dark:border-slate-900" :class="referralStore.milestoneProgress > i ? 'bg-[#9E4CFF]' : 'bg-gray-300 dark:bg-slate-700'" />
       </template>
@@ -243,7 +253,7 @@ const refSections = [0, 80, 160, 240, 320, 400]
     <div v-if="referralStore.milestoneBonusEarned" class="bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 rounded-lg px-4 py-2 text-sm font-semibold flex items-center gap-2 mt-2">
       <Check class="w-4 h-4" /> Milestone unlocked. One free billing cycle earned.
     </div>
-    <div v-else class="text-xs text-gray-400 mt-2">Reach 3 concurrent paid referrals to unlock one free billing cycle.</div>
+    <div v-else class="text-xs text-gray-400 mt-2">Reach {{ referralStore.economy.milestoneEvery }} concurrent paid referrals to unlock one free billing cycle.</div>
   </div>
 
   <!-- Section 6: Redemption cards -->
@@ -256,10 +266,10 @@ const refSections = [0, 80, 160, 240, 320, 400]
           <div class="bg-purple-50 dark:bg-purple-500/10 rounded-lg p-2"><Tag class="w-5 h-5 text-[#9E4CFF]" /></div>
           <span class="font-semibold">Subscription Discount</span>
         </div>
-        <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">Generate a 15 percent discount code for your next payment. Stacks with other discounts up to 25 percent total.</div>
+        <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">Generate a {{ referralStore.economy.discountPercent }} percent discount code for your next payment. Stacks with other discounts up to 25 percent total.</div>
         <div class="flex items-center gap-2 mb-2">
-          <UBadge color="purple">15 XPT</UBadge>
-          <span v-if="referralStore.xptBalance >= 15" class="text-green-500 text-xs">Available</span>
+          <UBadge color="purple">{{ referralStore.economy.discountCostXpt }} XPT</UBadge>
+          <span v-if="referralStore.xptBalance >= referralStore.economy.discountCostXpt" class="text-green-500 text-xs">Available</span>
           <span v-else class="text-gray-400 text-xs">Not enough XPT</span>
         </div>
         <div v-if="referralStore.generatedDiscountCode" class="flex items-center gap-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 mt-2">
@@ -271,7 +281,7 @@ const refSections = [0, 80, 160, 240, 320, 400]
           </button>
         </div>
         <template v-else>
-          <UButton :disabled="referralStore.xptBalance < 15" color="primary" class="mt-2" @click="generateDiscountCodeFromCard">
+          <UButton :disabled="referralStore.xptBalance < referralStore.economy.discountCostXpt" color="primary" class="mt-2" @click="generateDiscountCodeFromCard">
             Generate Discount Code
           </UButton>
         </template>
@@ -282,7 +292,7 @@ const refSections = [0, 80, 160, 240, 320, 400]
           <div class="bg-yellow-50 dark:bg-yellow-500/10 rounded-lg p-2"><Landmark class="w-5 h-5 text-yellow-500" /></div>
           <span class="font-semibold">Cash Withdrawal</span>
         </div>
-        <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">Reach 50 XPT and withdraw real money. Each token is worth ₦400. Minimum withdrawal is ₦20,000 at 50 XPT.</div>
+        <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">Reach {{ referralStore.economy.withdrawalMinXpt }} XPT and withdraw real money. Each token is worth ₦{{ referralStore.economy.nairaPerXpt }}. Minimum withdrawal is ₦{{ (referralStore.economy.withdrawalMinXpt * referralStore.economy.nairaPerXpt).toLocaleString('en-NG') }} at {{ referralStore.economy.withdrawalMinXpt }} XPT.</div>
         <div class="text-[#9E4CFF] text-xs font-semibold mb-2">Your balance is worth ₦{{ referralStore.withdrawableNaira.toLocaleString('en-NG') }}</div>
         <div v-if="referralStore.pendingWithdrawal" class="bg-yellow-50 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 rounded-lg px-4 py-2 text-xs font-semibold flex items-center gap-2 mb-2">
           <Info class="w-4 h-4" /> Withdrawal pending review
@@ -320,29 +330,29 @@ const refSections = [0, 80, 160, 240, 320, 400]
             <button @click="discountModalOpen = false; discountStep = 'confirm'; discountConfirmed = false" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500"><X class="w-5 h-5" /></button>
           </div>
 
-          <div v-if="discountStep === 'confirm' && referralStore.xptBalance < 15">
+          <div v-if="discountStep === 'confirm' && referralStore.xptBalance < referralStore.economy.discountCostXpt">
             <div class="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 mb-4 text-sm text-red-700 dark:text-red-400">
-              You need 15 XPT to generate a discount code. You currently have <strong>{{ referralStore.xptBalance }} XPT</strong>.
+              You need {{ referralStore.economy.discountCostXpt }} XPT to generate a discount code. You currently have <strong>{{ referralStore.xptBalance }} XPT</strong>.
             </div>
             <div class="mb-4">
-              <div class="flex justify-between text-xs text-gray-500 mb-1"><span>Progress</span><span>{{ referralStore.xptBalance }} / 15 XPT</span></div>
+              <div class="flex justify-between text-xs text-gray-500 mb-1"><span>Progress</span><span>{{ referralStore.xptBalance }} / {{ referralStore.economy.discountCostXpt }} XPT</span></div>
               <div class="h-2 w-full rounded-full bg-gray-100 dark:bg-slate-700">
-                <div class="bg-[#9E4CFF] h-2 rounded-full transition-all duration-700" :style="{ width: Math.min(100, (referralStore.xptBalance / 15) * 100) + '%' }" />
+                <div class="bg-[#9E4CFF] h-2 rounded-full transition-all duration-700" :style="{ width: Math.min(100, (referralStore.xptBalance / referralStore.economy.discountCostXpt) * 100) + '%' }" />
               </div>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Keep referring users to earn more XPT. Each signup earns 2 XPT, each paid conversion earns 5 XPT.</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Keep referring users to earn more XPT. Each signup earns {{ referralStore.economy.signupBonusXpt }} XPT, each paid conversion earns {{ referralStore.economy.conversionBonusXpt }} XPT.</p>
             <button @click="discountModalOpen = false; discountStep = 'confirm'" class="w-full py-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-semibold text-sm hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">Close</button>
           </div>
 
-          <div v-else-if="discountStep === 'confirm' && referralStore.xptBalance >= 15">
+          <div v-else-if="discountStep === 'confirm' && referralStore.xptBalance >= referralStore.economy.discountCostXpt">
             <div class="bg-gray-50 dark:bg-slate-800 rounded-xl px-4 py-3 mb-4 space-y-1 text-sm">
               <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Current XPT</span><span class="font-semibold">{{ referralStore.xptBalance }} XPT</span></div>
-              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Cost</span><span class="font-semibold text-red-500">- 15 XPT</span></div>
-              <div class="border-t border-gray-200 dark:border-slate-700 pt-1 flex justify-between"><span class="text-gray-500 dark:text-gray-400">Remaining after</span><span class="font-semibold">{{ referralStore.xptBalance - 15 }} XPT</span></div>
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Cost</span><span class="font-semibold text-red-500">- {{ referralStore.economy.discountCostXpt }} XPT</span></div>
+              <div class="border-t border-gray-200 dark:border-slate-700 pt-1 flex justify-between"><span class="text-gray-500 dark:text-gray-400">Remaining after</span><span class="font-semibold">{{ referralStore.xptBalance - referralStore.economy.discountCostXpt }} XPT</span></div>
             </div>
             <label class="flex items-start gap-3 mb-4 cursor-pointer">
               <input type="checkbox" v-model="discountConfirmed" class="mt-0.5 accent-purple-600" />
-              <span class="text-sm text-gray-700 dark:text-gray-300">I understand this will deduct 15 XPT from my balance</span>
+              <span class="text-sm text-gray-700 dark:text-gray-300">I understand this will deduct {{ referralStore.economy.discountCostXpt }} XPT from my balance</span>
             </label>
             <button
               :disabled="!discountConfirmed"
@@ -389,18 +399,18 @@ const refSections = [0, 80, 160, 240, 320, 400]
 
           <div v-if="withdrawStep === 'check' && !referralStore.canWithdraw && !referralStore.pendingWithdrawal">
             <div class="text-center mb-4">
-              <div class="text-4xl font-bold text-gray-900 dark:text-white mb-1">{{ referralStore.xptBalance }} <span class="text-xl font-semibold text-gray-400">/ 50 XPT</span></div>
+              <div class="text-4xl font-bold text-gray-900 dark:text-white mb-1">{{ referralStore.xptBalance }} <span class="text-xl font-semibold text-gray-400">/ {{ referralStore.economy.withdrawalMinXpt }} XPT</span></div>
               <div class="h-2 w-full rounded-full bg-gray-100 dark:bg-slate-700 mt-3 mb-2">
-                <div class="bg-[#9E4CFF] h-2 rounded-full transition-all duration-700" :style="{ width: Math.min(100, (referralStore.xptBalance / 50) * 100) + '%' }" />
+                <div class="bg-[#9E4CFF] h-2 rounded-full transition-all duration-700" :style="{ width: Math.min(100, (referralStore.xptBalance / referralStore.economy.withdrawalMinXpt) * 100) + '%' }" />
               </div>
               <p class="text-sm text-gray-500 dark:text-gray-400">You need <strong>{{ referralStore.xptToWithdrawal }} more XPT</strong> to unlock withdrawal</p>
             </div>
             <div class="bg-gray-50 dark:bg-slate-800 rounded-xl px-4 py-3 mb-4 space-y-1 text-sm">
               <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Current worth</span><span class="font-semibold">₦{{ referralStore.withdrawableNaira.toLocaleString('en-NG') }}</span></div>
-              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Minimum threshold</span><span class="font-semibold">₦20,000 at 50 XPT</span></div>
-              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Rate</span><span class="font-semibold">₦400 per XPT</span></div>
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Minimum threshold</span><span class="font-semibold">₦{{ (referralStore.economy.withdrawalMinXpt * referralStore.economy.nairaPerXpt).toLocaleString('en-NG') }} at {{ referralStore.economy.withdrawalMinXpt }} XPT</span></div>
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Rate</span><span class="font-semibold">₦{{ referralStore.economy.nairaPerXpt }} per XPT</span></div>
             </div>
-            <div class="bg-purple-50 dark:bg-purple-500/10 rounded-xl px-4 py-3 text-xs text-purple-700 dark:text-purple-400 mb-4">Signup referral = 2 XPT · Paid conversion = 5 XPT · Milestone bonus = 10 XPT</div>
+            <div class="bg-purple-50 dark:bg-purple-500/10 rounded-xl px-4 py-3 text-xs text-purple-700 dark:text-purple-400 mb-4">Signup referral = {{ referralStore.economy.signupBonusXpt }} XPT · Paid conversion = {{ referralStore.economy.conversionBonusXpt }} XPT · Milestone bonus = {{ referralStore.economy.milestoneBonusXpt }} XPT</div>
             <button @click="withdrawModalOpen = false" class="w-full py-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-semibold text-sm hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">Got it</button>
           </div>
 
@@ -424,7 +434,7 @@ const refSections = [0, 80, 160, 240, 320, 400]
               <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Ready to withdraw</div>
             </div>
             <div class="bg-gray-50 dark:bg-slate-800 rounded-xl px-4 py-3 mb-4 space-y-1 text-sm">
-              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Rate</span><span class="font-semibold">₦400 per XPT</span></div>
+              <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Rate</span><span class="font-semibold">₦{{ referralStore.economy.nairaPerXpt }} per XPT</span></div>
               <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Processing time</span><span class="font-semibold">3 to 5 business days</span></div>
             </div>
             <button @click="withdrawStep = 'form'" class="w-full py-2.5 rounded-xl bg-[#9E4CFF] text-white font-semibold text-sm hover:bg-purple-700 transition-colors">Continue</button>
@@ -432,6 +442,15 @@ const refSections = [0, 80, 160, 240, 320, 400]
 
           <div v-else-if="withdrawStep === 'form'">
             <div class="bg-amber-50 dark:bg-amber-500/10 rounded-xl px-4 py-2 text-xs text-amber-700 dark:text-amber-400 mb-4">Bank details must match your account name. Processing takes 3 to 5 business days.</div>
+            <div class="mb-3">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount (XPT)</label>
+              <input v-model.number="withdrawalAmount" type="number" :min="referralStore.economy.withdrawalMinXpt" :max="referralStore.xptBalance" step="1" class="w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white border-gray-300 text-gray-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Min {{ referralStore.economy.withdrawalMinXpt }} XPT · Max {{ referralStore.xptBalance }} XPT ·
+                <span class="text-[#9E4CFF] font-semibold">₦{{ (Number(withdrawalAmount || 0) * referralStore.economy.nairaPerXpt).toLocaleString('en-NG') }}</span>
+              </div>
+              <div v-if="bankErrors.amount" class="text-xs text-red-500 mt-1">{{ bankErrors.amount }}</div>
+            </div>
             <div class="mb-3">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Account Name</label>
               <input v-model="bankDetails.accountName" type="text" class="w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white border-gray-300 text-gray-900 dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
@@ -625,7 +644,7 @@ const refSections = [0, 80, 160, 240, 320, 400]
           </tr>
         </thead>
         <tbody>
-          <tr v-for="e in xptHistoryWithBalance" :key="e.date + e.reason" class="bg-white dark:bg-slate-900">
+          <tr v-for="(e, index) in xptHistoryWithBalance" :key="index" class="bg-white dark:bg-slate-900">
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ new Date(e.date).toLocaleDateString('en-NG', { year: 'numeric', month: 'short', day: 'numeric' }) }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ e.reason }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold" :class="e.amount > 0 ? 'text-[#9E4CFF]' : 'text-red-400'">{{ e.amount > 0 ? '+' : '' }}{{ e.amount }} XPT</td>
@@ -644,9 +663,9 @@ const refSections = [0, 80, 160, 240, 320, 400]
     </div>
     <div class="text-gray-500 dark:text-gray-400 text-sm space-y-2">
       <p>Free referral perks: Refer any user (even on free plan) to unlock bonus daily messages, extra team seat, and weekly upload.</p>
-      <p>Paid referral discounts: When your referral upgrades, you earn XPT tokens and 10% discounts for both of you.</p>
-      <p>Milestone bonus: Reach 3 concurrent paid referrals to unlock a one-time 10 XPT bonus and a free billing cycle.</p>
-      <p>Withdrawals: Each XPT is worth ₦400. Minimum withdrawal is 50 XPT (₦20,000).</p>
+      <p>Paid referral discounts: When your referral upgrades, you earn XPT tokens and {{ referralStore.economy.discountPercent }}% discounts for both of you.</p>
+      <p>Milestone bonus: Reach {{ referralStore.economy.milestoneEvery }} concurrent paid referrals to unlock a one-time {{ referralStore.economy.milestoneBonusXpt }} XPT bonus and a free billing cycle.</p>
+      <p>Withdrawals: Each XPT is worth ₦{{ referralStore.economy.nairaPerXpt }}. Minimum withdrawal is {{ referralStore.economy.withdrawalMinXpt }} XPT (₦{{ (referralStore.economy.withdrawalMinXpt * referralStore.economy.nairaPerXpt).toLocaleString('en-NG') }}).</p>
     </div>
   </div>
 

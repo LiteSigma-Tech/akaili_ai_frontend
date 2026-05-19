@@ -292,7 +292,6 @@ onMounted(() => {
   }
   if (route.query.ref) {
     form.value.referral_code = route.query.ref
-    referralApplied.value = true
   }
 })
 </script>
