@@ -131,7 +131,7 @@
                 </div>
 
                 <div class="pt-4">
-                  <button type="submit" :disabled="loading"
+                  <button type="submit" :disabled="loading || !plansData"
                     class="w-full bg-[#9E4CFF] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#8B3DFF] shadow-lg shadow-purple-500/25 transition-all transform active:scale-[0.99] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-3">
 
                     <svg v-if="loading" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
@@ -223,6 +223,7 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification/dist/index.mjs'
 import { useAuthStore } from '~/stores/authStore'
 import { useSubscriptionStore } from '~/stores/subscriptionStore'
 
@@ -235,8 +236,10 @@ const router = useRouter()
 const config = useRuntimeConfig()
 const authStore = useAuthStore()
 const subscriptionStore = useSubscriptionStore()
+const toast = useToast()
 
 const loading = ref(false)
+const plansLoadFailed = ref(false)
 const isLoggedIn = computed(() => authStore.isLoggedIn)
 const selectedProvider = ref('stripe')
 const selectedCurrency = ref('USD')
@@ -257,12 +260,6 @@ const STATIC_PLANS = {
   professional: { name: 'Professional', features: ['5 Chatbots', 'Advanced Analytics', 'Priority Support', 'Database Integrations'] },
   enterprise: { name: 'Enterprise', features: ['Unlimited Chatbots', 'Custom Analytics', '24/7 Phone Support', 'Advanced Security'] },
   starter: { name: 'Starter', features: ['1 Chatbot', 'Basic Analytics', 'Email Support'] },
-}
-
-const STATIC_PRICES = {
-  professional: { USD: '$99.00', NGN: '₦150,000', GBP: '£79.00', EUR: '€89.00' },
-  enterprise: { USD: '$299.00', NGN: '₦450,000', GBP: '£239.00', EUR: '€269.00' },
-  starter: { USD: 'Free' },
 }
 
 const CURRENCY_NAMES = {
@@ -300,7 +297,11 @@ const formattedPrice = computed(() => {
     if (found?.is_free) return 'Free'
     if (found?.price?.formatted) return found.price.formatted
   }
-  return STATIC_PRICES[planId]?.[selectedCurrency.value] ?? STATIC_PRICES.professional?.USD ?? '$99.00'
+  // Spec §5.5 / D4: never render a hardcoded price literal. While /api/plans is
+  // loading, show a loading dash; if the fetch failed we surface the failure via
+  // a toast (see onMounted / selectCurrency) and leave the price blank so the
+  // user can't accept a stale number.
+  return plansLoadFailed.value ? '—' : '…'
 })
 
 const isPlanAlreadyActive = computed(() => {
@@ -341,11 +342,19 @@ const selectCurrency = async (code) => {
     const plans = await $fetch(`${config.public.apiBase}/api/plans`, {
       query: { currency: selectedCurrency.value }
     })
-    if (plans?.success && plans?.data) plansData.value = plans.data
+    if (plans?.success && plans?.data) {
+      plansData.value = plans.data
+      plansLoadFailed.value = false
+    } else {
+      plansLoadFailed.value = true
+      toast.error('Could not load prices for this currency. Please try again.')
+    }
   } catch (e) {
     console.warn('[CHECKOUT] currency override fetch failed', e)
     selectedCurrency.value = code
     overrideCookie.value = code
+    plansLoadFailed.value = true
+    toast.error('Could not load prices for this currency. Please try again.')
   } finally {
     currencyOverrideLoading.value = false
   }
@@ -405,15 +414,21 @@ onMounted(async () => {
     })
     if (response?.success && response?.data) {
       plansData.value = response.data
+      plansLoadFailed.value = false
       const rec = response.data.recommended
       if (rec) {
         selectedCurrency.value = rec.currency
         selectedProvider.value = rec.provider
       }
+    } else {
+      plansLoadFailed.value = true
+      toast.error('Could not load plan prices. Please refresh the page.')
     }
   } catch (e) {
-    console.warn('[CHECKOUT] /api/plans fetch failed; using static fallback', e)
+    console.warn('[CHECKOUT] /api/plans fetch failed', e)
+    plansLoadFailed.value = true
     if (startCurrency) selectedCurrency.value = startCurrency
+    toast.error('Could not load plan prices. Please refresh the page.')
   }
 })
 
