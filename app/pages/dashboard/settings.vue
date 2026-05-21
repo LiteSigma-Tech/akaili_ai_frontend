@@ -371,15 +371,21 @@
                             </div>
                             
                             <div class="flex gap-3">
-                                <button v-if="subscriptionStore.currentPlan.status === 'active'" 
-                                    @click="openChangePlanModal"
-                                    class="px-4 py-2 bg-[#9E4CFF] hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
-                                    Change Plan
-                                </button>
-                                <button v-else 
+                                <!--
+                                    Reactivate is the inverse of "cancel at period end" — it
+                                    only works when subscriptionStore.currentPlan.cancel_at_period_end
+                                    is true. For 'active' (not pending cancel) or 'trialing' subs,
+                                    show "Change Plan" instead.
+                                -->
+                                <button v-if="subscriptionStore.currentPlan.cancel_at_period_end"
                                     @click="reactivateSubscription"
                                     class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
                                     Reactivate
+                                </button>
+                                <button v-else-if="['active','trialing'].includes(subscriptionStore.currentPlan.status)"
+                                    @click="openChangePlanModal"
+                                    class="px-4 py-2 bg-[#9E4CFF] hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
+                                    Change Plan
                                 </button>
                             </div>
                         </div>
