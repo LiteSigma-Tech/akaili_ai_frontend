@@ -25,9 +25,9 @@
             plan-id="starter"
             title="Starter"
             subtitle="Perfect for small businesses"
-            :price-text="priceText('starter', 'Free')"
+            :price-text="priceText('starter')"
             price-suffix="/month"
-            :features="featuresFor('starter', ['Up to 1,000 conversations/month', '1 chatbot', 'Basic analytics', 'Email support'])"
+            :features="featuresFor('starter')"
             :cta="getButtonText('starter')"
             :is-current="isCurrentPlan('starter')"
             @select-plan="handlePlanSelection"
@@ -38,9 +38,9 @@
             plan-id="professional"
             title="Professional"
             subtitle="For growing companies"
-            :price-text="priceText('professional', '$99')"
+            :price-text="priceText('professional')"
             price-suffix="/month"
-            :features="featuresFor('professional', ['Up to 10,000 conversations/month', '5 chatbots', 'Advanced analytics', 'Priority support', 'Database integration'])"
+            :features="featuresFor('professional')"
             :cta="getButtonText('professional')"
             :featured="true"
             :is-current="isCurrentPlan('professional')"
@@ -52,9 +52,9 @@
             plan-id="enterprise"
             title="Enterprise"
             subtitle="For large organizations"
-            :price-text="priceText('enterprise', '$299')"
+            :price-text="priceText('enterprise')"
             price-suffix="/month"
-            :features="featuresFor('enterprise', ['Unlimited conversations', 'Unlimited chatbots', 'Custom analytics', '24/7 phone support', 'Advanced security'])"
+            :features="featuresFor('enterprise')"
             :cta="getButtonText('enterprise')"
             :is-current="isCurrentPlan('enterprise')"
             @select-plan="handlePlanSelection"
@@ -75,6 +75,7 @@ import CtaBanner from '~/components/homepage/CtaBanner.vue';
 import DowngradeModal from '~/components/settings/DowngradeModal.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification/dist/index.mjs'
 import { useAuthStore } from '~/stores/authStore'
 import { useSubscriptionStore } from '~/stores/subscriptionStore'
 
@@ -82,9 +83,11 @@ const config = useRuntimeConfig()
 const router = useRouter()
 const authStore = useAuthStore()
 const subscriptionStore = useSubscriptionStore()
+const toast = useToast()
 
 const showDowngradeModal = ref(false)
 const plansData = ref(null)
+const plansLoadFailed = ref(false)
 const recommended = computed(() => plansData.value?.recommended ?? null)
 
 function findPlan(id) {
@@ -92,17 +95,19 @@ function findPlan(id) {
     return plansData.value.plans.find((p) => p.id === id) ?? null
 }
 
-function priceText(id, fallback) {
+// While plansData is null (still loading or fetch failed), return null so
+// PricingCard renders its skeleton bar. Never return a hardcoded literal —
+// that's what produced the USD-flicker before NGN values arrived.
+function priceText(id) {
     const plan = findPlan(id)
-    if (!plan) return fallback
+    if (!plan) return null
     if (plan.is_free) return 'Free'
-    return plan.price?.formatted ?? fallback
+    return plan.price?.formatted ?? null
 }
 
-function featuresFor(id, fallback) {
+function featuresFor(id) {
     const plan = findPlan(id)
-    if (Array.isArray(plan?.features) && plan.features.length) return plan.features
-    return fallback
+    return Array.isArray(plan?.features) && plan.features.length ? plan.features : null
 }
 
 const isCurrentPlan = (planId) => {
@@ -144,16 +149,22 @@ onMounted(async () => {
         subscriptionStore.fetchSubscription()
     }
 
-    // Phase 4: pull real prices + recommended currency/provider. Falls back
-    // silently to the hardcoded $-prices on network/API error so the page
-    // never renders empty.
+    // Pull real prices + recommended currency/provider. Skeleton bars render
+    // until plansData is populated — no hardcoded literal fallback (that's
+    // what produced the USD→NGN flicker on first paint).
     try {
         const response = await $fetch(`${config.public.apiBase}/api/plans`)
         if (response?.success && response?.data) {
             plansData.value = response.data
+            plansLoadFailed.value = false
+        } else {
+            plansLoadFailed.value = true
+            toast.error('Could not load pricing. Please refresh the page.')
         }
     } catch (e) {
-        console.warn('[PRICING] /api/plans fetch failed; using static fallback prices', e)
+        console.warn('[PRICING] /api/plans fetch failed', e)
+        plansLoadFailed.value = true
+        toast.error('Could not load pricing. Please refresh the page.')
     }
 
     if (window.AOS) {
