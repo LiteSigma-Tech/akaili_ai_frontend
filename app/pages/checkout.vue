@@ -262,15 +262,18 @@ const STATIC_PLANS = {
   starter: { name: 'Starter', features: ['1 Chatbot', 'Basic Analytics', 'Email Support'] },
 }
 
+// Platform supports only USD + NGN — see config('subscriptions.currencies')
+// on the backend. The popover lists exactly what the API returns; the
+// fallback array below only matters if /api/plans fails completely.
 const CURRENCY_NAMES = {
-  USD: 'US Dollar', NGN: 'Nigerian Naira', GBP: 'British Pound',
-  EUR: 'Euro', GHS: 'Ghanaian Cedi', KES: 'Kenyan Shilling', ZAR: 'South African Rand',
+  USD: 'US Dollar',
+  NGN: 'Nigerian Naira',
 }
 
 const availableCurrencies = computed(() => {
   const codes = Array.isArray(plansData.value?.available_currencies) && plansData.value.available_currencies.length
     ? plansData.value.available_currencies
-    : ['USD', 'NGN', 'GBP', 'EUR', 'GHS', 'KES', 'ZAR']
+    : ['USD', 'NGN']
   return codes.map(code => ({ code, name: CURRENCY_NAMES[code] || code }))
 })
 
