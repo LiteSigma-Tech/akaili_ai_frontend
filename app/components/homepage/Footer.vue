@@ -30,6 +30,16 @@
             </div>
           </div>
 
+      <!-- 2: Company links -->
+      <div class="space-y-5">
+        <h3 class=" text-white text-xl font-bold">Product</h3>
+        <nav class="flex flex-col space-y-2 text-sm">
+          <NuxtLink to="/features" class="text-[#9CA3AF] hover:text-gray-200">Features</NuxtLink>
+          <NuxtLink to="/pricing" class="text-[#9CA3AF] hover:text-gray-200">Pricing</NuxtLink>
+          <NuxtLink to="/referrals" class="text-[#9CA3AF] hover:text-gray-200">Referral Program</NuxtLink>
+
+        </nav>
+      </div>
           <!-- Right: Nav Columns -->
           <div class="nav-columns">
 
